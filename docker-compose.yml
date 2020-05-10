@@ -1,0 +1,12 @@
+version: "3"
+services:
+  file-server:
+    ports:
+      - 5000:5000
+    build: .
+    volumes:
+      - ./files/images:/files/images
+    environment:
+      PORT: :5000
+      IMAGE_MAX_WIDTH: 3000
+      IMAGE_MAX_HEIGHT: 2000
