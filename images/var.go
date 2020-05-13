@@ -8,6 +8,9 @@ var LocalImagePath string
 //ServerImageURL value
 var ServerImageURL string
 
+//ErrFileExists error
+var ErrFileExists = errors.New("file-exists")
+
 //ErrFileNotFound is file not exists in file server
 var ErrFileNotFound = errors.New("file-not-found")
 

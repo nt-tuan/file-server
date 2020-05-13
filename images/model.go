@@ -7,6 +7,11 @@ type ImageReq struct {
 	FileName string `uri:"name" binding:"required"`
 }
 
+//UploadReq model
+type UploadReq struct {
+	Dir string `uri:"dir"`
+}
+
 //SelfCorrect image request parameters
 func (img *ImageReq) SelfCorrect() {
 	if img.Width > MaxWidth {

@@ -25,8 +25,8 @@ func main() {
 	router := gin.Default()
 	imageGroup := router.Group(images.ServerImageURL)
 	imageGroup.Static("/static", images.LocalImagePath)
-	imageGroup.GET("/size/:width/:height/:name", images.HandleResizeImage)
-	imageGroup.POST("/upload", images.HandleUploadImage)
+	imageGroup.GET("/size/:width/:height/*name", images.HandleResizeImage)
+	imageGroup.POST("/upload/*dir", images.HandleUploadImage)
 
 	// Listen and serve on port
 	router.Run(port)

@@ -12,11 +12,16 @@ import (
 func HandleUploadImage(c *gin.Context) {
 	// single file
 	file, _ := c.FormFile("file")
+	var model UploadReq
+	if err := c.BindUri(&model); err != nil {
+		c.AbortWithStatusJSON(400, err.Error())
+		return
+	}
 	if file == nil {
 		c.AbortWithStatusJSON(400, ErrFileNotFound.Error())
 		return
 	}
-	path, err := changeFileName(file.Filename)
+	path, err := changeFileName(file.Filename, model.Dir)
 	if err != nil {
 		c.AbortWithStatusJSON(400, err.Error())
 		return

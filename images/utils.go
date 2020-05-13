@@ -2,7 +2,6 @@ package images
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/png"
 	"io"
@@ -12,31 +11,20 @@ import (
 	"strings"
 )
 
-func changeFileName(source string) (string, error) {
+func changeFileName(source string, subdir string) (string, error) {
 	//TODO: change file name to a valid one
 	dest := filepath.Clean(source)
-	strs := strings.SplitN(dest, ".", 2)
-	var filename, ext string
-	if len(strs) >= 2 {
-		filename = strs[0]
-		ext = strs[1]
-	} else {
-		return "", ErrFileExtInvalid
+	ext := filepath.Ext(dest)
+	filename := strings.TrimSuffix(dest, ext)
+	dirPath := filepath.Join(LocalImagePath, subdir)
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		return "", err
 	}
-
-	var path string
-	var count = 1
-	for {
-		path = filepath.Join(LocalImagePath, filename+"."+ext)
-		if !fileExists(path) {
-			return path, nil
-		}
-		filename += fmt.Sprintf("_%v", count)
-		count++
-		if count > MaxDuplicateFile {
-			return "", ErrFileExtInvalid
-		}
+	path := filepath.Join(LocalImagePath, subdir, filename+ext)
+	if !fileExists(path) {
+		return path, nil
 	}
+	return "", ErrFileExists
 }
 
 func fileExists(filename string) bool {
