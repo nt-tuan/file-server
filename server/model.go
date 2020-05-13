@@ -1,4 +1,10 @@
-package images
+package server
+
+//MaxBound of image
+var (
+	MaxWidth  uint = 4000
+	MaxHeight uint = 2000
+)
 
 //ImageReq model
 type ImageReq struct {
