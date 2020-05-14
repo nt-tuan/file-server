@@ -22,6 +22,7 @@ func HandleUploadImage(c *gin.Context) {
 		return
 	}
 	path, err := changeFileName(file.Filename, model.Dir)
+	
 	if err != nil {
 		c.AbortWithStatusJSON(400, err.Error())
 		return
