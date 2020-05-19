@@ -1,4 +1,4 @@
-package local
+package localstorage
 
 import (
 	"bytes"
@@ -11,33 +11,39 @@ import (
 	"strings"
 )
 
-func tryGetNotExistFilename(path string) (rt string, err error) {
-	ext := filepath.Ext(path)
-	name := strings.TrimSuffix(path, ext)
-	rt = path
-	for count := 1; count < MaxDuplicateFile; count++ {
-		_, err = os.Stat(rt)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				break
-			} else {
-				return
-			}
-		}
-		rt = fmt.Sprintf("%v_%v.%v", name, count, ext)
-	}
+//GetPhysicalWorkingPath from client path
+func (lc *Storage) GetPhysicalWorkingPath(clientPath string) (rs string) {
+	rs = filepath.Join(lc.WorkingDir, clientPath)
 	return
 }
 
-func (lc *Local) correctFileName(source string) (string, error) {
-	//TODO: change file name to a valid one
-	base := filepath.Base(source)
-	dest := filepath.Clean(base)
-	path := filepath.Join(lc.WorkingDir, dest)
-	if !fileExists(path) {
-		return path, nil
+//GetPhysicalHistoricalPath from client path
+func (lc *Storage) GetPhysicalHistoricalPath(clientPath string) (rs string) {
+	rs = filepath.Join(lc.HistoryDir, clientPath)
+	return
+}
+
+func tryGetNotExistFilename(path string) (string, error) {
+	ext := filepath.Ext(path)
+	name := strings.TrimSuffix(path, ext)
+	rt := path
+	for count := 1; count < MaxDuplicateFile; count++ {
+		if !fileExists(rt) {
+			return rt, nil
+		}
+		rt = fmt.Sprintf("%v_%v%v", name, count, ext)
 	}
 	return "", ErrFileExisted
+}
+
+func (lc *Storage) correctFileName(source string) (string, string, error) {
+	//TODO: change file name to a valid one
+	clientPath := filepath.Clean(source)
+	serverPath := filepath.Join(lc.WorkingDir, clientPath)
+	if !fileExists(serverPath) {
+		return serverPath, clientPath, nil
+	}
+	return "", "", ErrFileExisted
 }
 
 func fileExists(filename string) bool {
@@ -61,8 +67,9 @@ func getImageFromPath(filepath string) (image.Image, error) {
 	return imageData, nil
 }
 
-func IsValidExt(ext string) bool {
-	for _, item := range ValidExts {
+//IsValidExt return true if file extension is a valid extension
+func (lc *Storage) IsValidExt(ext string) bool {
+	for _, item := range lc.ValidExts {
 		if item == ext {
 			return true
 		}
@@ -70,7 +77,7 @@ func IsValidExt(ext string) bool {
 	return false
 }
 
-func (lc *Local) moveToTrash(filename string) (dst string, err error) {
+func (lc *Storage) moveToTrash(filename string) (dst string, err error) {
 	base := filepath.Base(filename)
 	dst, err = copyFile(filename, filepath.Join(lc.HistoryDir, base), true)
 	return
@@ -112,10 +119,10 @@ func copyFile(src, dst string, forceIfDestExisted bool) (dest string, err error)
 		}
 	}
 
-	if err = os.Link(src, dst); err == nil {
+	if err = os.Link(src, dest); err == nil {
 		return
 	}
-	err = copyFileContents(src, dst)
+	err = copyFileContents(src, dest)
 	return
 }
 
@@ -144,4 +151,24 @@ func copyFileContents(src, dst string) (err error) {
 	}
 	err = out.Sync()
 	return
+}
+
+//RemoveContents in dir
+func RemoveContents(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

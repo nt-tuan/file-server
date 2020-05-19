@@ -1,11 +1,13 @@
 package database
 
 //AddTag to a file
-func (db *DB) AddTag(file *File, tag string) error {
+func (db *DB) AddTag(file *File, tagstr string) error {
+	tag := Tag{ID: tagstr}
+	db.Create(&tag)
 	if err := db.
-		Model(&File{}).
+		Model(file).
 		Association("Tags").
-		Append(&Tag{ID: tag}).
+		Append(&tag).
 		Error; err != nil {
 		return err
 	}
@@ -14,7 +16,7 @@ func (db *DB) AddTag(file *File, tag string) error {
 
 //RemoveTag from a file
 func (db *DB) RemoveTag(file *File, tag string) error {
-	if err := db.Model(&File{}).
+	if err := db.Model(file).
 		Association("Tags").
 		Delete(&Tag{ID: tag}).
 		Error; err != nil {

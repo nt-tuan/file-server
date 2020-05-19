@@ -1,12 +1,12 @@
-package local
+package localstorage
 
 import "errors"
 
 //DefaultWorkingDir global value
-var DefaultWorkingDir string
+var DefaultWorkingDir string = "/files/images"
 
 //DefaultHistoryDir global value
-var DefaultHistoryDir string
+var DefaultHistoryDir string = "/files/_history"
 
 //ServerImageURL value
 var ServerImageURL string
@@ -18,9 +18,6 @@ var (
 	ErrFileExtInvalid = errors.New("file-ext-invalid")
 	ErrFileExisted    = errors.New("file-existed")
 )
-
-//ValidExts is collection of accepted image file extensions
-var ValidExts = []string{PngExt, SvgExt}
 
 //ValidNameChars is collection of accepted characters
 var ValidNameChars = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-"

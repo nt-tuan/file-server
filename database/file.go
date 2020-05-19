@@ -1,16 +1,31 @@
 package database
 
-import "path/filepath"
+import (
+	"path/filepath"
+
+	"github.com/jinzhu/gorm"
+)
 
 // region gets
 
 // GetFiles has all of specified tags
-func (db *DB) GetFiles(tags []string, page, size uint, order string) ([]File, error) {
+func (db *DB) GetFiles(tags []string, page, size uint, orders []string) ([]File, error) {
 	var files []File
-	if err := db.Model(&File{}).
-		Preload("Tags").
-		Joins("JOIN file_tags ON file_tags.file_id = files.id").
-		Where("file_tags.tag_id in ?", tags).
+	tempDB := db.Model(&File{}).
+		Preload("Tags")
+	if tags != nil && len(tags) > 0 {
+		tempDB = tempDB.
+			Joins("JOIN file_tags ON file_tags.file_id = files.id").
+			Where("file_tags.tag_id in ?", tags)
+	}
+
+	if orders != nil {
+		for _, od := range orders {
+			tempDB = tempDB.Order(od)
+		}
+	}
+
+	if err := tempDB.
 		Offset(size * page).
 		Limit(size).
 		Find(&files).
@@ -23,6 +38,14 @@ func (db *DB) GetFiles(tags []string, page, size uint, order string) ([]File, er
 //GetFileByName return File
 func (db *DB) GetFileByName(filename string) (file *File, err error) {
 	file = &File{Fullname: filename}
+	err = db.Model(&File{}).
+		First(file).Error
+	return
+}
+
+//GetFileByID return file
+func (db *DB) GetFileByID(id uint) (file *File, err error) {
+	file = &File{Model: gorm.Model{ID: id}}
 	err = db.Model(&File{}).
 		First(file).Error
 	return

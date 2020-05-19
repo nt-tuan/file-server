@@ -17,11 +17,16 @@ var (
 // File table
 type File struct {
 	gorm.Model
-	Fullname      string `gorm:"unique_index"`
+	Fullname      string
 	NamePart      string
 	ExtensionPart *string
-	Tags          []Tag `gorm:"many2many:file_tags;"`
+	Tags          []Tag `gorm:"many2many:file_tags;association_foreignkey:ID;foreignkey:ID"`
 	FileHistories []FileHistory
+}
+
+// Tag table
+type Tag struct {
+	ID string `gorm:"primary_key:true"`
 }
 
 // FileHistory table store history of file changing
@@ -65,10 +70,4 @@ func (f *File) ExtractParts() {
 		return
 	}
 	f.NamePart = parts[0]
-}
-
-// Tag table
-type Tag struct {
-	ID    string `gorm:"primary_key"`
-	Files []File `gorm:"many2many:file_tags;"`
 }

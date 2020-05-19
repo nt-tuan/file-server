@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -11,32 +12,30 @@ import (
 var db *DB
 
 func setup() {
-	db = &DB{url: "postgres://file-server:@:5432/file-server?sslmode=disable"}
-	db.initialize()
-	db.teardown()
-	db.migrate()
-	db.LogMode(true)
+	db = NewClean("postgres://file-server:@:5432/file-server?sslmode=disable")
 }
 
-func (db *DB) teardown() {
-	db.DropTableIfExists(&FileHistory{})
-	db.DropTableIfExists(&File{})
-	db.DropTableIfExists(&Tag{})
+func TestGetFiles(t *testing.T) {
+	files, err := db.GetFiles(make([]string, 0), 0, 10, make([]string, 0))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	for _, f := range files {
+		fmt.Println(f.Fullname)
+	}
 }
 
 func TestAddFile(t *testing.T) {
 	newFile := &File{Fullname: "test.txt"}
 	newFile2 := &File{Fullname: "test.txt"}
-	if err := db.AddFile(newFile); err != nil {
+	if err := db.CreateFile(newFile); err != nil {
 		t.Error(err)
 	}
-	if err := db.AddFile(newFile2); err == nil {
+	if err := db.CreateFile(newFile2); err == nil {
 		t.Error(err)
 	}
 	if err := db.RenameFile(newFile, "hhee"); err != nil {
-		t.Error(err)
-	}
-	if err := db.ReplaceFile(newFile, "/removed/hehehe"); err != nil {
 		t.Error(err)
 	}
 	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, "/deleted/zzz.txt"); err != nil {
