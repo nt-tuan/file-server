@@ -11,8 +11,8 @@ type ImageIDReq struct {
 type ImagesReq struct {
 	PageSize    uint     `form:"pageSize"`
 	PageCurrent uint     `form:"pageCurrent"`
-	OrderBy     []string `form:"orderBy" validate:"oneof=id created_at fullname"`
-	OrderDir    []string `form:"orderDir" validate:"oneof=asc desc"`
+	OrderBy     []string `form:"orderBy[]"`
+	OrderDir    []string `form:"orderDir[]"`
 	Tags        []string `json:"tags"`
 }
 

@@ -22,5 +22,6 @@ func (db *DB) RemoveTag(file *File, tag string) error {
 		Error; err != nil {
 		return err
 	}
+
 	return nil
 }

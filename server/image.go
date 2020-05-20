@@ -147,7 +147,7 @@ func (s *Server) HandleGetImages(c *gin.Context) {
 //HandleGetImageByID will response image file if exists
 func (s *Server) HandleGetImageByID(c *gin.Context) {
 	var model models.ImageIDReq
-	if err := c.Bind(&model); err != nil {
+	if err := errorJSON(c, c.BindUri(&model)); err != nil {
 		return
 	}
 	file, err := s.db.GetFileByID(model.ID)

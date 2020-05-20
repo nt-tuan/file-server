@@ -20,30 +20,31 @@ import (
 )
 
 var server *Server
-var addedFilePath string = "../files/_source/IMG_1001.JPG"
+var addedFilePath string = "ERROR_FIFIFIF.JPG"
+var code = 1
+var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
 
 func setup() {
-	var sv = Server{}
-	server = &sv
+	db := database.NewClean(dbURL)
+	server = NewServer(db)
 	reset()
-	sv.SetupRouter()
-	sv.db.LogMode(false)
+	server.SetupRouter()
 }
 
 func reset() {
-	dbURL := "postgres://file-server:@:54321/file-server?sslmode=disable"
 	server.db = database.NewClean(dbURL)
-	server.config = NewConfig()
-	server.storage = localstorage.NewStorage(server.db)
-	server.storage.WorkingDir = "../files/_test/images"
-	server.storage.HistoryDir = "../files/_test/_history"
+	server.storage.WorkingDir = testImagesStorageFolder
+	server.storage.HistoryDir = testImagesHistoryFolder
 	localstorage.RemoveContents(server.storage.WorkingDir)
 	localstorage.RemoveContents(server.storage.HistoryDir)
+	addedFilePath = filepath.Join(testImageSourceFolder, imageURLs[0].DestName)
 }
 
 func TestMain(m *testing.M) {
+	downloadTestFiles()
 	setup()
-	code := m.Run()
+	deleteTestFiles()
+	code = m.Run()
 	os.Exit(code)
 }
 
@@ -96,6 +97,7 @@ func requestAddFile(method, url string) (*httptest.ResponseRecorder, error) {
 }
 
 func TestAddFile(t *testing.T) {
+	setup()
 	recorder, err := requestAddFile("PUT", "/admin/image")
 	if err != nil {
 		assert.Error(t, err)
@@ -120,8 +122,7 @@ func TestAddDuplicatedFile(t *testing.T) {
 }
 
 func TestRenameFile(t *testing.T) {
-	reset()
-	t.Run("Add new file to delete", TestAddFile)
+	t.Run("Add new file to rename", TestAddFile)
 	data := gin.H{
 		"name": "hehe.jpg",
 	}
@@ -134,6 +135,29 @@ func TestRenameFile(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 }
 
+func TestRenameFileShouldFail(t *testing.T) {
+	reset()
+	recorder := performJSONRequest(server.router,
+		"POST",
+		fmt.Sprintf("/admin/image/%v/rename", 1),
+		nil,
+	)
+	assert.Equal(t, 400, recorder.Code)
+	recorder = performJSONRequest(server.router,
+		"POST",
+		fmt.Sprintf("/admin/image/%v/rename", "z"),
+		nil,
+	)
+	assert.Equal(t, 400, recorder.Code)
+	t.Run("Add new file to rename", TestAddFile)
+	recorder = performJSONRequest(server.router,
+		"POST",
+		fmt.Sprintf("/admin/image/%v/rename", 1),
+		nil,
+	)
+	assert.Equal(t, 400, recorder.Code)
+}
+
 func TestDeleteFile(t *testing.T) {
 	reset()
 	t.Run("Add new file to delete", TestAddFile)
@@ -141,13 +165,20 @@ func TestDeleteFile(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
-func TestReplaceFile(t *testing.T) {
+func TestDeleteFileShouldFail(t *testing.T) {
 	reset()
+	recorder := performRequest(server.router, "DELETE", fmt.Sprintf("/admin/image/%v", 1), nil)
+	assert.Equal(t, 400, recorder.Code)
+	recorder = performRequest(server.router, "DELETE", fmt.Sprintf("/admin/image/%v", "z"), nil)
+	assert.Equal(t, 400, recorder.Code)
+}
+
+func TestReplaceFile(t *testing.T) {
 	t.Run("Add new file to replace", TestAddFile)
-	addedFilePath = "../files/_source/IMG_1004.JPG"
+	addedFilePath = filepath.Join(testImageSourceFolder, imageURLs[4].DestName)
 	recorder, err := requestAddFile("POST", "/admin/image/1/replace")
 	if err != nil {
-		assert.Error(t, err)
+		assert.Fail(t, err.Error())
 		return
 	}
 
@@ -156,16 +187,16 @@ func TestReplaceFile(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
-func TestGetImages(t *testing.T) {
-	reset()
+func TestGetImagesInfo(t *testing.T) {
 	t.Run("Add new file to replace", TestAddFile)
-	recorder := performRequest(server.router, "GET", fmt.Sprintf("/admin/images?pageSize=10"), nil)
+	myURL := "/admin/images?orderBy%5B%5D=id&orderBy%5B%5D=fullname&pageSize=10"
+	server.db.LogMode(true)
+	recorder := performRequest(server.router, "GET", myURL, nil)
 	t.Logf("Response: %v", recorder.Body.String())
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
 func TestAddTag(t *testing.T) {
-	reset()
 	t.Run("Add new file to replace", TestAddFile)
 	recorder := performRequest(server.router, "PUT", "/admin/image/1/tag/test_tag", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -173,13 +204,11 @@ func TestAddTag(t *testing.T) {
 
 func TestAdd2Tags(t *testing.T) {
 	t.Run("Add new tag to delete", TestAddTag)
-	t.Run("Add new file to replace", TestAddFile)
 	recorder := performRequest(server.router, "PUT", "/admin/image/1/tag/test_tag", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
 func TestRemoveTag(t *testing.T) {
-	reset()
 	t.Run("Add new tag to delete", TestAddTag)
 	recorder := performRequest(server.router, "DELETE", "/admin/image/1/tag/test_tag", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -187,8 +216,76 @@ func TestRemoveTag(t *testing.T) {
 
 func TestGetImagesHavingTags(t *testing.T) {
 	t.Run("Add new tag to get", TestAddTag)
-	server.db.LogMode(true)
 	recorder := performRequest(server.router, "GET", fmt.Sprintf("/admin/images?pageSize=10"), nil)
 	t.Logf("Response: %v", recorder.Body.String())
 	assert.Equal(t, http.StatusOK, recorder.Code)
+}
+
+func TestStartServer(t *testing.T) {
+	os.Setenv("PORT", ":5000")
+	srv := server.Start()
+	if err := srv.Close(); err != nil {
+		t.Error(err)
+		return
+	}
+}
+
+func TestGetImageByID(t *testing.T) {
+	t.Run("Add image to get", TestAddFile)
+	recorder := performRequest(server.router, "GET", "/admin/image/1", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+}
+
+func TestGetImageByIDShouldFail(t *testing.T) {
+	reset()
+	recorder := performRequest(server.router, "GET", "/admin/image/1", nil)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+}
+
+func TestGetResizedImage(t *testing.T) {
+	reset()
+	addedFilePath = filepath.Join(testImageSourceFolder, "test_resizing_image.png")
+	recorder, err := requestAddFile("PUT", "/admin/image")
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
+
+	// Assert we encoded correctly,
+	// the request gives a 200
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	recorder2 := performRequest(server.router, "GET", "/images/size/400/0/test_resizing_image.png", nil)
+	assert.Equal(t, http.StatusOK, recorder2.Code)
+}
+
+func TestGetResizedImageShouldWork(t *testing.T) {
+	os.Setenv("IMAGE_MAX_WIDTH", "100")
+	os.Setenv("IMAGE_MAX_HEIGHT", "100")
+	setup()
+	addedFilePath = filepath.Join(testImageSourceFolder, "test_resizing_image.png")
+	recorder, err := requestAddFile("PUT", "/admin/image")
+	if err != nil {
+		assert.Error(t, err)
+		return
+	}
+
+	// Assert we encoded correctly,
+	// the request gives a 200
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	recorder2 := performRequest(server.router, "GET", "/images/size/400/0/test_resizing_image.png", nil)
+	assert.Equal(t, http.StatusOK, recorder2.Code)
+}
+
+func TestGetResizedImageShouldFail(t *testing.T) {
+	reset()
+	// Assert we encoded correctly,
+	// the request gives a 200
+	recorder := performRequest(server.router, "GET", "/images/size/400/0/test_resizing_image.png", nil)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	t.Run("Add image to get", TestAddFile)
+	recorder = performRequest(server.router, "GET", "/images/size/400/0/IMG_1001.JPG", nil)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 }

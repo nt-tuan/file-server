@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
@@ -18,11 +20,9 @@ type Server struct {
 }
 
 //NewServer will instantiate a new server
-func NewServer() *Server {
+func NewServer(db *database.DB) *Server {
 	var sv = Server{}
-
-	dbURL := os.Getenv("DATABASE_URL")
-	sv.db = database.New(dbURL)
+	sv.db = db
 	sv.config = NewConfig()
 	sv.storage = localstorage.NewStorage(sv.db)
 	return &sv
@@ -56,9 +56,20 @@ func (s *Server) SetupRouter() {
 }
 
 //Start server
-func (s *Server) Start() {
+func (s *Server) Start() *http.Server {
 	port := os.Getenv("PORT")
-	s.SetupRouter()
 	// Listen and serve on port
-	s.router.Run(port)
+	srv := &http.Server{
+		Addr:    port,
+		Handler: s.router,
+	}
+
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+	return srv
 }
