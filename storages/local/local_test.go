@@ -3,6 +3,7 @@ package localstorage
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -12,18 +13,16 @@ import (
 
 var store *Storage
 var addingFile string = "test.jpg"
+var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
 
 func setup() {
-	db := &database.DB{}
-	db.SetURL("postgres://file-server:@:5432/file-server?sslmode=disable")
-	db.Initialize()
-	db.Teardown()
-	db.Migrate()
-	db.LogMode(true)
+	db := database.NewClean(dbURL)
 	store = NewStorage(db)
-	store.WorkingDir = "../../files/_test/images"
-	store.HistoryDir = "../../files/_test/_history"
+	store.WorkingDir = testImagesStorageFolder
+	store.HistoryDir = testImagesHistoryFolder
 	RemoveContents(store.WorkingDir)
+	RemoveContents(store.HistoryDir)
+	addingFile = filepath.Join(testImageSourceFolder, imageURLs[0].DestName)
 }
 func TestMain(m *testing.M) {
 	setup()
@@ -88,4 +87,10 @@ func TestReplaceFile(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+func TestCreateMissingFiles(t *testing.T) {
+	setup()
+	store.WorkingDir = testImageSourceFolder
+	store.CreateMissingFiles()
 }

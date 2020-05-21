@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/disintegration/imaging"
 	"github.com/thanhtuan260593/file-server/database"
@@ -32,6 +33,12 @@ func NewStorage(db *database.DB) *Storage {
 	}
 	if w := os.Getenv("IMAGE_HISTORY_DIR"); w != "" {
 		local.HistoryDir = w
+	}
+
+	if isInit := os.Getenv("INIT_SAMPLE_DATA"); isInit != "" {
+		if v, err := strconv.ParseBool(isInit); err == nil && v {
+			local.CreateMissingFiles()
+		}
 	}
 	return &local
 }
@@ -205,4 +212,25 @@ func (lc *Storage) GetResized2DImage(filename string, width, height uint) (image
 	//Resize image
 	resized := imaging.Resize(imageData, int(width), int(height), imaging.Lanczos)
 	return resized, nil
+}
+
+// CreateMissingFiles files
+func (lc *Storage) CreateMissingFiles() {
+	filepath.Walk(lc.WorkingDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		localPath, err := filepath.Rel(lc.WorkingDir, path)
+		if err != nil {
+			return err
+		}
+
+		// skip if this file exists in database
+		if _, err := lc.db.GetFileByName(localPath); err == nil {
+			return nil
+		}
+
+		return lc.db.CreateFile(&database.File{Fullname: localPath})
+	})
 }

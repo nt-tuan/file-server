@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thanhtuan260593/file-server/server/models"
 	localstorage "github.com/thanhtuan260593/file-server/storages/local"
 )
 
@@ -43,9 +44,9 @@ func getFileFromGinContext(c *gin.Context) (io.Reader, error) {
 func errorJSON(c *gin.Context, err error) error {
 	if err != nil {
 		c.Error(err)
-		c.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		var model = models.ErrorRes{}
+		model.Err = err.Error()
+		c.AbortWithStatusJSON(400, &model)
 	}
 	return err
 }

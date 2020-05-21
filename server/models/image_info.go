@@ -11,9 +11,9 @@ type ImageIDReq struct {
 type ImagesReq struct {
 	PageSize    uint     `form:"pageSize"`
 	PageCurrent uint     `form:"pageCurrent"`
-	OrderBy     []string `form:"orderBy[]"`
-	OrderDir    []string `form:"orderDir[]"`
-	Tags        []string `json:"tags"`
+	OrderBy     []string `form:"orderBy"`
+	OrderDir    []string `form:"orderDir"`
+	Tags        []string `form:"tags"`
 }
 
 //ImageRenameReq bind rename request model
@@ -29,6 +29,7 @@ type ImageNewReq struct {
 
 //ImageInfoRes model
 type ImageInfoRes struct {
+	ID       uint     `json:"id"`
 	Fullname string   `json:"fullname"`
 	Tags     []string `json:"tags"`
 }
@@ -37,6 +38,7 @@ type ImageInfoRes struct {
 func NewImageInfoRes(img *database.File) *ImageInfoRes {
 	rs := ImageInfoRes{}
 	rs.Fullname = img.Fullname
+	rs.ID = img.ID
 	if img.Tags != nil {
 		rs.Tags = make([]string, len(img.Tags))
 		for i, tag := range img.Tags {

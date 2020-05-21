@@ -10,9 +10,10 @@ import (
 )
 
 var db *DB
+var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
 
 func setup() {
-	db = NewClean("postgres://file-server:@:5432/file-server?sslmode=disable")
+	db = NewClean(dbURL)
 }
 
 func TestGetFiles(t *testing.T) {

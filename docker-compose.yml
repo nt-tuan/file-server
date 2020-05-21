@@ -11,6 +11,12 @@ services:
       - ./files/_history:/files/_history
     environment:
       DATABASE_URL: postgres://file-server:@db:5432/file-server?sslmode=disable
+      DATABASE_LOG_MODE: "true"
+      HOST: localhost:5000
+      BASE_PATH: /
+      SWAGGER_TITLE: "Image server api information"
+      SWAGGER_VERSION: "v1"
+      INIT_SAMPLE_DATA: "true"
       PORT: :5000
       IMAGE_MAX_WIDTH: 3000
       IMAGE_MAX_HEIGHT: 2000

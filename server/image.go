@@ -9,7 +9,15 @@ import (
 	"github.com/thanhtuan260593/file-server/server/models"
 )
 
-//HandleUploadImage response the image url if success
+// HandleUploadImage godocs
+// @Id UploadImage
+// @Summary Upload an image
+// @Accept multipart/form-data
+// @Param file formData file true "Upload file"
+// @Param name formData string true "File name"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image [put]
 func (s *Server) HandleUploadImage(c *gin.Context) {
 	var model models.ImageNewReq
 	if err := c.Bind(&model); err != nil {
@@ -25,10 +33,18 @@ func (s *Server) HandleUploadImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	c.JSON(200, nil)
+	c.Status(200)
 }
 
-//HandleResize image
+// HandleResize godocs
+// Id GetResizedImage
+// @Summary Get a resized image
+// @Param width path uint true "Width of image. Zero if resize scaled on its height"
+// @Param height path uint true "Height of image. Zero if resize scaled on its width"
+// @Param /name path string true "Image local path"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /images/size/{width}/{height}/{/name} [get]
 func (s *Server) HandleResize(c *gin.Context) {
 	var model models.ImageFileReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
@@ -54,7 +70,13 @@ func (s *Server) HandleResize(c *gin.Context) {
 	c.DataFromReader(200, contentLength, contentType, resReader, extraHeaders)
 }
 
-// HandleDeleteImage will delete image in storage
+// HandleDeleteImage godocs
+// @Id DeleteImage
+// @Summary Delete an image
+// @Param id path uint true "ID of image"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id} [delete]
 func (s *Server) HandleDeleteImage(c *gin.Context) {
 	var model models.ImageIDReq
 	if err := c.BindUri(&model); err != nil {
@@ -68,9 +90,18 @@ func (s *Server) HandleDeleteImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+	c.Status(200)
 }
 
-// HandleRenameImage will rename image
+// HandleRenameImage godocs
+// @Id RenameImage
+// @Summary Rename an image
+// @Accept application/json
+// @Param model query models.ImageRenameReq true "query model"
+// @Param id path uint true "ID of image"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/rename [post]
 func (s *Server) HandleRenameImage(c *gin.Context) {
 	var model models.ImageRenameReq
 	var modelID models.ImageIDReq
@@ -89,9 +120,20 @@ func (s *Server) HandleRenameImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+	c.Status(200)
 }
 
-//HandleReplaceImage will replace image
+// HandleReplaceImage godoc
+// @Id ReplaceImage
+// @Summary Replace an image
+// @Description replace and image
+// @Accept multipart/form-data
+// @Produce  json
+// @Param id path uint true "ID of image"
+// @Param file formData file true "Replaced file"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/replace [post]
 func (s *Server) HandleReplaceImage(c *gin.Context) {
 	var model models.ImageIDReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
@@ -109,11 +151,23 @@ func (s *Server) HandleReplaceImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	s.storage.ReplaceFile(file.Fullname, reader)
-	c.JSON(200, nil)
+	if _, err := s.storage.ReplaceFile(file.Fullname, reader); err != nil {
+		errorJSON(c, err)
+		return
+	}
+
+	c.Status(200)
 }
 
-//HandleGetImages by tags
+// HandleGetImages godocs
+// @Id GetImages
+// @Summary Get list of images information
+// @Description Get list of images information
+// @Produce  json
+// @Param model query models.ImagesReq false "query model"
+// @Success 200 {array} models.ImageInfoRes
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/images [get]
 func (s *Server) HandleGetImages(c *gin.Context) {
 	var model models.ImagesReq
 	if err := errorJSON(c, c.BindQuery(&model)); err != nil {
@@ -144,7 +198,13 @@ func (s *Server) HandleGetImages(c *gin.Context) {
 	c.JSON(200, rs)
 }
 
-//HandleGetImageByID will response image file if exists
+// HandleGetImageByID docs
+// @Id GetImageByID
+// @Summary Get an image information
+// @Param id path uint true "ID of image"
+// @Success 200 {object} models.ImageInfoRes
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id} [get]
 func (s *Server) HandleGetImageByID(c *gin.Context) {
 	var model models.ImageIDReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
@@ -155,10 +215,17 @@ func (s *Server) HandleGetImageByID(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	c.JSON(200, file)
+	c.JSON(200, models.NewImageInfoRes(file))
 }
 
-//HandleAddImageTag will response true if success
+// HandleAddImageTag godocs
+// @Id AddImageTag
+// @Summary Add a tag to an image
+// @Param id path uint true "ID of image"
+// @Param tag path string true "Added tag"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/tag/{tag} [put]
 func (s *Server) HandleAddImageTag(c *gin.Context) {
 	var model models.ImageTagReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
@@ -173,9 +240,17 @@ func (s *Server) HandleAddImageTag(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+	c.Status(200)
 }
 
-//HandleRemoveImageTag will response false if failed
+// HandleRemoveImageTag godocs
+// @Id RemoveImageTag
+// @Summary Remove a tag from an image
+// @Param id path uint true "ID of image"
+// @Param tag path string true "Added tag"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/tag/{tag} [delete]
 func (s *Server) HandleRemoveImageTag(c *gin.Context) {
 	var model models.ImageTagReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {

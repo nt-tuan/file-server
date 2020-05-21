@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"path/filepath"
 	"strings"
 
@@ -12,6 +13,11 @@ var (
 	CreateAction = "Created"
 	RenameAction = "Renamed"
 	DeleteAction = "Deleted"
+)
+
+// Errors
+var (
+	ErrNotFound = errors.New("file-not-found")
 )
 
 // File table

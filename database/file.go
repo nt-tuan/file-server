@@ -16,7 +16,7 @@ func (db *DB) GetFiles(tags []string, page, size uint, orders []string) ([]File,
 	if tags != nil && len(tags) > 0 {
 		tempDB = tempDB.
 			Joins("JOIN file_tags ON file_tags.file_id = files.id").
-			Where("file_tags.tag_id in ?", tags)
+			Where("file_tags.tag_id in (?)", tags)
 	}
 
 	if orders != nil {
@@ -39,7 +39,11 @@ func (db *DB) GetFiles(tags []string, page, size uint, orders []string) ([]File,
 func (db *DB) GetFileByName(filename string) (file *File, err error) {
 	file = &File{Fullname: filename}
 	err = db.Model(&File{}).
+		Where(file).
 		First(file).Error
+	if file.ID == 0 {
+		return nil, ErrNotFound
+	}
 	return
 }
 

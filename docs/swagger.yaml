@@ -1,0 +1,308 @@
+basePath: /api/v1
+definitions:
+  models.ErrorRes:
+    properties:
+      err:
+        type: string
+    type: object
+  models.ImageInfoRes:
+    properties:
+      fullname:
+        type: string
+      id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ImageRenameReq:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.ImagesReq:
+    properties:
+      orderBy:
+        items:
+          type: string
+        type: array
+      orderDir:
+        items:
+          type: string
+        type: array
+      pageCurrent:
+        type: integer
+      pageSize:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:5000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /admin/image:
+    put:
+      consumes:
+      - multipart/form-data
+      operationId: UploadImage
+      parameters:
+      - description: Upload file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: File name
+        in: formData
+        name: name
+        required: true
+        type: string
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Upload an image
+  /admin/image/{id}:
+    delete:
+      operationId: DeleteImage
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Delete an image
+    get:
+      operationId: GetImageByID
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ImageInfoRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Get an image information
+  /admin/image/{id}/rename:
+    post:
+      consumes:
+      - application/json
+      operationId: RenameImage
+      parameters:
+      - in: query
+        name: name
+        required: true
+        type: string
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Rename an image
+  /admin/image/{id}/replace:
+    post:
+      consumes:
+      - multipart/form-data
+      description: replace and image
+      operationId: ReplaceImage
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Replaced file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Replace an image
+  /admin/image/{id}/tag/{tag}:
+    delete:
+      operationId: RemoveImageTag
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Added tag
+        in: path
+        name: tag
+        required: true
+        type: string
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Remove a tag from an image
+    put:
+      operationId: AddImageTag
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Added tag
+        in: path
+        name: tag
+        required: true
+        type: string
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Add a tag to an image
+  /admin/images:
+    get:
+      description: Get list of images information
+      operationId: GetImages
+      parameters:
+      - in: query
+        name: pageCurrent
+        type: integer
+      - in: query
+        items:
+          type: string
+        name: orderBy
+        type: array
+      - in: query
+        items:
+          type: string
+        name: orderDir
+        type: array
+      - in: query
+        items:
+          type: string
+        name: tags
+        type: array
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ImageInfoRes'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Get list of images information
+  /images/size/{width}/{height}/{/name}:
+    get:
+      parameters:
+      - description: Width of image. Zero if resize scaled on its height
+        in: path
+        name: width
+        required: true
+        type: integer
+      - description: Height of image. Zero if resize scaled on its width
+        in: path
+        name: height
+        required: true
+        type: integer
+      - description: Image local path
+        in: path
+        name: /name
+        required: true
+        type: string
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Get a resized image
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+  BasicAuth:
+    type: basic
+  OAuth2AccessCode:
+    authorizationUrl: https://example.com/oauth/authorize
+    flow: accessCode
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+  OAuth2Application:
+    flow: application
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      write: ' Grants write access'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+  OAuth2Implicit:
+    authorizationUrl: https://example.com/oauth/authorize
+    flow: implicit
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      write: ' Grants write access'
+    type: oauth2
+  OAuth2Password:
+    flow: password
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      read: ' Grants read access'
+      write: ' Grants write access'
+    tokenUrl: https://example.com/oauth/token
+    type: oauth2
+swagger: "2.0"
+x-extension-openapi:
+  example: value on a json format
