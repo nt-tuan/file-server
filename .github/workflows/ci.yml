@@ -14,9 +14,10 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@master
+      - name: Up fake database
+        run: docker-compose up -d dbtest
       - name: Test
         run: go test ./...
-
       - name: Upload Coverage report to CodeCov
         uses: codecov/codecov-action@v1.0.0
         with:
