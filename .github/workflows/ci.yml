@@ -35,7 +35,9 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@master
-      - name: Build
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
-      - name: View build files
-        run: dir
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: thanhtuan2605/image-server
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
