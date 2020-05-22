@@ -35,3 +35,8 @@ jobs:
       - uses: actions/checkout@master
       - name: Build
         run: docker-compose build
+      - name: Upload image
+        uses: actions/upload-artifact@v1
+        with:
+          name: file-server.image
+          path: file-server.image
