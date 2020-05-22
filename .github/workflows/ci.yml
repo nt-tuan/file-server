@@ -37,4 +37,4 @@ jobs:
         uses: actions/checkout@master
 
       - name: Build
-        run: make build
+        run: docker-compose build
