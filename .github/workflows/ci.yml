@@ -39,8 +39,3 @@ jobs:
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
       - name: View build files
         run: dir
-      - name: Upload image
-        uses: actions/upload-artifact@v1
-        with:
-          name: image
-          path: image
