@@ -37,8 +37,9 @@ jobs:
       - uses: actions/checkout@master
       - name: Build
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
-      - name: Upload image
+      - name: View build files
         run: dir
+      - name: Upload image
         uses: actions/upload-artifact@v1
         with:
           name: image
