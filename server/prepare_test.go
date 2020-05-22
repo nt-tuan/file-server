@@ -108,6 +108,5 @@ func downloadTestFiles() error {
 }
 
 func deleteTestFiles() {
-
 	return
 }

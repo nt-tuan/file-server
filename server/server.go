@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"github.com/thanhtuan260593/file-server/docs"
@@ -46,6 +47,7 @@ func NewServer(db *database.DB) *Server {
 			sv.db.LogMode(true)
 		}
 	}
+
 	return &sv
 }
 
@@ -100,14 +102,11 @@ func (s *Server) SetupRouter() {
 }
 
 //Start server
-func (s *Server) Start() *http.Server {
-	// Listen and serve on port
-	//s.router.Run(s.port)
+func (s *Server) Start() {
 	srv := &http.Server{
 		Addr:    s.port,
 		Handler: s.router,
 	}
-
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
@@ -115,7 +114,6 @@ func (s *Server) Start() *http.Server {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 	quit := make(chan os.Signal)
@@ -133,7 +131,5 @@ func (s *Server) Start() *http.Server {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown:", err)
 	}
-
 	log.Println("Server exiting")
-	return srv
 }

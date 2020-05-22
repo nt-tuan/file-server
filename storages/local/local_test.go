@@ -1,7 +1,6 @@
 package localstorage
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,18 +11,29 @@ import (
 )
 
 var store *Storage
-var addingFile string = "test.jpg"
+var addedFile, replacedFile URLImage
 var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
 
+func loadExternalFile() {
+	addedFile = imageURLs[0]
+	replacedFile = imageURLs[1]
+}
+
 func setup() {
+	downloadTestFiles()
+	reset()
+}
+
+func reset() {
 	db := database.NewClean(dbURL)
 	store = NewStorage(db)
 	store.WorkingDir = testImagesStorageFolder
 	store.HistoryDir = testImagesHistoryFolder
 	RemoveContents(store.WorkingDir)
 	RemoveContents(store.HistoryDir)
-	addingFile = filepath.Join(testImageSourceFolder, imageURLs[0].DestName)
+	loadExternalFile()
 }
+
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
@@ -31,34 +41,26 @@ func TestMain(m *testing.M) {
 }
 
 func TestAddFile(t *testing.T) {
-	addingFile = uuid.NewV4().String() + ".jpg"
-	reader, err := os.Open("../../files/_source/IMG_1001.JPG")
+	reset()
+	path := filepath.Join(testImageSourceFolder, addedFile.DestName)
+	reader, err := os.Open(path)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	defer reader.Close()
+
 	// var fname string
-	_, err = store.AddFile(reader, addingFile)
+	_, err = store.AddFile(reader, addedFile.DestName)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	_, err = store.AddFile(reader, addingFile)
-	if err == nil {
-		t.FailNow()
-	}
-
-	if !errors.Is(err, ErrFileExisted) {
-		t.Error(err)
-		return
-	}
+	reader.Close()
 }
 
 func TestRemoveFile(t *testing.T) {
 	t.Run("Create file to remove file", TestAddFile)
-	historyFile, err := store.DeleteFile(addingFile)
+	historyFile, err := store.DeleteFile(addedFile.DestName)
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,7 +71,7 @@ func TestRemoveFile(t *testing.T) {
 func TestRenameFile(t *testing.T) {
 	t.Run("Create file to rename file", TestAddFile)
 	newName := uuid.NewV4().String() + ".jpg"
-	if _, err := store.RenameFile(addingFile, newName); err != nil {
+	if _, err := store.RenameFile(addedFile.DestName, newName); err != nil {
 		t.Error(err)
 		return
 	}
@@ -77,20 +79,21 @@ func TestRenameFile(t *testing.T) {
 }
 
 func TestReplaceFile(t *testing.T) {
-	reader, err := os.Open("../../files/_source/IMG_1004.JPG")
+	t.Run("Create file to rename file", TestAddFile)
+	path := filepath.Join(testImageSourceFolder, replacedFile.DestName)
+	reader, err := os.Open(path)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Run("Create file to rename file", TestAddFile)
-	if _, err := store.ReplaceFile(addingFile, reader); err != nil {
+	if _, err := store.ReplaceFile(addedFile.DestName, reader); err != nil {
 		t.Error(err)
 		return
 	}
 }
 
 func TestCreateMissingFiles(t *testing.T) {
-	setup()
+	reset()
 	store.WorkingDir = testImageSourceFolder
 	store.CreateMissingFiles()
 }

@@ -17,6 +17,7 @@ func setup() {
 }
 
 func TestGetFiles(t *testing.T) {
+	setup()
 	files, err := db.GetFiles(make([]string, 0), 0, 10, make([]string, 0))
 	if err != nil {
 		t.Error(err)
@@ -28,16 +29,19 @@ func TestGetFiles(t *testing.T) {
 }
 
 func TestAddFile(t *testing.T) {
+	setup()
 	newFile := &File{Fullname: "test.txt"}
 	newFile2 := &File{Fullname: "test.txt"}
 	if err := db.CreateFile(newFile); err != nil {
 		t.Error(err)
 	}
-	if err := db.CreateFile(newFile2); err == nil {
+	if err := db.CreateFile(newFile2); err != nil {
 		t.Error(err)
+		return
 	}
 	if err := db.RenameFile(newFile, "hhee"); err != nil {
 		t.Error(err)
+		return
 	}
 	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, "/deleted/zzz.txt"); err != nil {
 		t.Error(err)
@@ -45,7 +49,6 @@ func TestAddFile(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	setup()
 	code := m.Run()
 	os.Exit(code)
 }

@@ -221,15 +221,6 @@ func TestGetImagesHavingTags(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
-func TestStartServer(t *testing.T) {
-	os.Setenv("PORT", ":5000")
-	srv := server.Start()
-	if err := srv.Close(); err != nil {
-		t.Error(err)
-		return
-	}
-}
-
 func TestGetImageByID(t *testing.T) {
 	t.Run("Add image to get", TestAddFile)
 	recorder := performRequest(server.router, "GET", "/admin/image/1", nil)
