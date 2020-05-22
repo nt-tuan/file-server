@@ -208,6 +208,9 @@ paths:
       operationId: GetImages
       parameters:
       - in: query
+        name: pageSize
+        type: integer
+      - in: query
         name: pageCurrent
         type: integer
       - in: query
@@ -225,9 +228,6 @@ paths:
           type: string
         name: tags
         type: array
-      - in: query
-        name: pageSize
-        type: integer
       produces:
       - application/json
       responses:

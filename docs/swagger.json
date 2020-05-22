@@ -245,6 +245,11 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "name": "pageCurrent",
                         "in": "query"
                     },
@@ -270,11 +275,6 @@
                             "type": "string"
                         },
                         "name": "tags",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "pageSize",
                         "in": "query"
                     }
                 ],

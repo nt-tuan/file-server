@@ -10,7 +10,7 @@ services:
       - ./files/images:/files/images
       - ./files/_history:/files/_history
     environment:
-      DATABASE_URL: postgres://file-server:@db:5432/file-server?sslmode=disable
+      DATABASE_URL: postgres://fsv:@db:5432/fsv?sslmode=disable
       DATABASE_LOG_MODE: "true"
       HOST: localhost:5000
       BASE_PATH: /
@@ -24,7 +24,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: file-server
+      POSTGRES_USER: fsv
     image: postgres:11.2-alpine
   dbtest:
     ports:
