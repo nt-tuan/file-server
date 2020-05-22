@@ -1,7 +1,7 @@
 version: "3"
 services:
   file-server:
-    images: file-server.image
+    image: file-server.image
     depends_on:
       - db
     ports:
