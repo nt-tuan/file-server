@@ -17,7 +17,7 @@ jobs:
       - name: Up fake database
         run: docker-compose up -d dbtest
       - name: Test
-        run: go test ./...
+        run: go test ./server
       - name: Upload Coverage report to CodeCov
         uses: codecov/codecov-action@v1.0.0
         with:
