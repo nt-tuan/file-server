@@ -21,6 +21,8 @@ jobs:
         uses: actions/checkout@master
       - name: Up fake database
         run: docker-compose up -d dbtest
+      - name: install pngquant
+        run: apt-get install -y pngquant
       - name: Test
         run: go test ./server
       - name: Upload Coverage report to CodeCov
