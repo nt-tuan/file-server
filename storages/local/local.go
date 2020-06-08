@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/disintegration/imaging"
 	"github.com/thanhtuan260593/file-server/database"
 )
 
@@ -196,8 +195,8 @@ func (lc *Storage) RollbackDeleteFile(fileName, bkFile string) (err error) {
 	return
 }
 
-//GetResized2DImage in storage
-func (lc *Storage) GetResized2DImage(filename string, width, height uint) (image.Image, error) {
+// GetImage from filename
+func (lc *Storage) GetImage(filename string) (image.Image, error) {
 	var path = filepath.Join(lc.WorkingDir, filename)
 	//Check if file extention is valid
 	var ext = filepath.Ext(path)
@@ -209,9 +208,7 @@ func (lc *Storage) GetResized2DImage(filename string, width, height uint) (image
 		return nil, err
 	}
 
-	//Resize image
-	resized := imaging.Resize(imageData, int(width), int(height), imaging.Lanczos)
-	return resized, nil
+	return imageData, nil
 }
 
 // CreateMissingFiles files
@@ -233,4 +230,9 @@ func (lc *Storage) CreateMissingFiles() {
 
 		return lc.db.CreateFile(&database.File{Fullname: localPath})
 	})
+}
+
+// GetFilePath from filename
+func (lc *Storage) GetFilePath(filename string) string {
+	return filepath.Join(lc.WorkingDir, filename)
 }

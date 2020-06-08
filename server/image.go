@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thanhtuan260593/file-server/imaging"
 	"github.com/thanhtuan260593/file-server/server/models"
 )
 
@@ -51,13 +52,14 @@ func (s *Server) HandleResize(c *gin.Context) {
 		return
 	}
 	s.config.CorrectImageModel(&model)
-	img, err := s.storage.GetResized2DImage(model.FileName, model.Width, model.Height)
+	img, err := s.storage.GetImage(model.FileName)
 	if err != nil {
 		errorJSON(c, err)
 		return
 	}
 	var ext = filepath.Ext(model.FileName)
-	resReader, contentLength, err := parseImageToReader(s.storage, img, ext)
+	//resReader, contentLength, err := imaging.ResizeAndEncode(img, ext, model.Width, model.Height)
+	resReader, contentLength, err := imaging.ResizeAndEncode(img, ext, model.Width, model.Height)
 	if err != nil {
 		errorJSON(c, err)
 		return
@@ -67,7 +69,7 @@ func (s *Server) HandleResize(c *gin.Context) {
 	extraHeaders := map[string]string{
 		"Content-Disposition": `inline`,
 	}
-	c.DataFromReader(200, contentLength, contentType, resReader, extraHeaders)
+	c.DataFromReader(200, int64(contentLength), contentType, resReader, extraHeaders)
 }
 
 // HandleDeleteImage godocs

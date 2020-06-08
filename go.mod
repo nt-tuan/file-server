@@ -20,6 +20,7 @@ require (
 	github.com/swaggo/swag v1.6.5
 	github.com/twinj/uuid v1.0.0
 	github.com/urfave/cli v1.22.4 // indirect
+	github.com/yusukebe/go-pngquant v0.0.0-20200223090257-49b91f11b627
 	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7 // indirect
 	golang.org/x/tools v0.0.0-20200519205726-57a9e4404bf7 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect

@@ -11,7 +11,8 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o /file-server .
 
 # Run
-FROM scratch
+FROM alpine:latest
+RUN apk add --no-cache pngquant
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /file-server ./
 EXPOSE 5000
