@@ -1,7 +1,7 @@
 version: "3"
 services:
   file-server:
-    image: gcr.io/image-server:latest
+    image: gcr.io/ptcloud/image-server:latest
     depends_on:
       - db
     ports:
