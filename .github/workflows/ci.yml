@@ -37,7 +37,6 @@ jobs:
     steps:
       - uses: RafikFarhad/push-to-gcr-github-action@v1
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
         with:
           gcloud_service_key: ${{secrets.GCLOUD_SERVICE_KEY}}
           project_name: image-server
