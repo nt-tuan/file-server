@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
+      - name: Check out code
+        uses: actions/checkout@master
       # Setup gcloud CLI
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
