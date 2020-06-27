@@ -36,7 +36,6 @@ jobs:
     needs: [test]
     steps:
       - uses: RafikFarhad/push-to-gcr-github-action@v1
-      - name: Publish to Registry
         with:
           gcloud_service_key: ${{secrets.GCLOUD_SERVICE_KEY}}
           project_name: image-server
