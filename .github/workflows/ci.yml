@@ -35,10 +35,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
-      - uses: actions/checkout@master
+      - uses: RafikFarhad/push-to-gcr-github-action@v1
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
-          name: thanhtuan2605/image-server
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          gcloud_service_key: ${{secrets.GCLOUD_SERVICE_KEY}}
+          project_name: image-server
+          image_name: image-server
