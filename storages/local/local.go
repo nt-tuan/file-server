@@ -3,6 +3,7 @@ package localstorage
 import (
 	"image"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -214,6 +215,10 @@ func (lc *Storage) GetImage(filename string) (image.Image, error) {
 // CreateMissingFiles files
 func (lc *Storage) CreateMissingFiles() {
 	filepath.Walk(lc.WorkingDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Print(err)
+			return err
+		}
 		if info.IsDir() {
 			return nil
 		}
