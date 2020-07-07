@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -55,7 +54,6 @@ import (
 // @x-extension-openapi {"example": "value on a json format"}
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
-	log.Print(dbURL)
 	db := database.New(dbURL)
 	server := server.NewServer(db)
 	server.SetupRouter()
