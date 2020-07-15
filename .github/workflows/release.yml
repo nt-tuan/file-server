@@ -40,5 +40,7 @@ jobs:
       # Build the Docker image
       - name: Build
         run: docker build -t docker.pkg.github.com/thanhtuan260593/file-server/$IMAGE_NAME:${GITHUB_REF##*/} .
+      - name: Login github package
+        run: docker login https://docker.pkg.github.com --username thanhtuan260593 --password {{secrets.GITHUB_TOKEN}}
       - name: Publish
         run: docker push docker.pkg.github.com/thanhtuan260593/file-server/$IMAGE_NAME:${GITHUB_REF##*/}
