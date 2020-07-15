@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@master
       # Build the Docker image
       - name: Build
-        run: docker build -t $IMAGE_NAME
+        run: docker build -t $IMAGE_NAME .
       - name: Login github package
         run: docker login docker.pkg.github.com -u thanhtuan260593 --password {{secrets.PACKAGE_TOKEN}}
       - name: Tag package
