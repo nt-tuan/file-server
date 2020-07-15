@@ -20,6 +20,6 @@ jobs:
       - name: Login github package
         run: docker login docker.pkg.github.com -u ${GITHUB_ACTOR} --password ${{secrets.GITHUB_TOKEN}}
       - name: Tag package
-        run: docker tag $IMAGE_NAME docker.pkg.github.com/thanhtuan260593/file-server/$IMAGE_NAME:${GITHUB_REF##*/}
+        run: docker tag $IMAGE_NAME docker.pkg.github.com/$GITHUB_REPOSITORY/$IMAGE_NAME:${GITHUB_REF##*/}
       - name: Publish
-        run: docker push docker.pkg.github.com/thanhtuan260593/file-server/$IMAGE_NAME:${GITHUB_REF##*/}
+        run: docker push docker.pkg.github.com/$GITHUB_REPOSITORY/$IMAGE_NAME:${GITHUB_REF##*/}
