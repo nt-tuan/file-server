@@ -43,20 +43,30 @@ func NewStorage(db *database.DB) *Storage {
 	return &local
 }
 
-// AddFile from fileheader
-func (lc *Storage) AddFile(reader io.Reader, fileName string) (string, error) {
+func (lc *Storage) physicalAddFile(reader io.Reader, fileName string) (string, error) {
 	serverPath, clientPath, err := lc.correctFileName(fileName)
+	log.Println(serverPath, clientPath)
 	if err != nil {
 		return "", err
 	}
-
+	if err := os.MkdirAll(filepath.Dir(serverPath), os.ModePerm); err != nil {
+		return "", err
+	}
 	out, err := os.Create(serverPath)
 	if err != nil {
 		return "", err
 	}
 	defer out.Close()
 	_, err = io.Copy(out, reader)
+	return clientPath, err
+}
 
+// AddFile from fileheader
+func (lc *Storage) AddFile(reader io.Reader, fileName string) (*database.File, error) {
+	clientPath, err := lc.physicalAddFile(reader, fileName)
+	if err != nil {
+		return nil, err
+	}
 	// Save new file to database if this file created successfully
 	fileModel := database.File{Fullname: clientPath}
 	err = lc.db.CreateFile(&fileModel)
@@ -64,9 +74,9 @@ func (lc *Storage) AddFile(reader io.Reader, fileName string) (string, error) {
 	// If failed to save to database, delete the file
 	if err != nil {
 		lc.DeleteFile(clientPath)
-		return "", err
+		return nil, err
 	}
-	return clientPath, nil
+	return &fileModel, nil
 }
 
 // RollbackNewFile will try to rollback of action newfile
@@ -83,22 +93,20 @@ func (lc *Storage) ReplaceFile(path string, file io.Reader) (string, error) {
 		return "", err
 	}
 
-	// Delete the file
-	var bkDelFile string
-	bkDelFile, err = lc.DeleteFile(path)
-	if err != nil {
-		return "", err
-	}
+	// Delete physical file
+	log.Printf("Try delete file %s", path)
+	_, backupPath, _, _, _, deleteErr := lc.physicalDeleteFile(path)
 
-	// Create new file with the same name
-	_, err = lc.AddFile(file, filepath.Base(path))
+	// Create new physical file
+	log.Printf("Try add file %s", path)
+	_, err = lc.physicalAddFile(file, path)
 
 	// If failed to create file, rollback action delete file
-	if err != nil {
-		lc.RollbackDeleteFile(path, bkDelFile)
+	if err != nil && deleteErr == nil {
+		lc.RollbackDeleteFile(path, backupPath)
 		return "", err
 	}
-	return bkDelFile, nil
+	return backupPath, nil
 }
 
 //RenameFile in storage
@@ -109,12 +117,15 @@ func (lc *Storage) RenameFile(clientPath, newName string) (string, error) {
 		return "", err
 	}
 
-	dir := filepath.Dir(clientPath)
-	newPath := filepath.Join(dir, newName)
-
 	oldPsPath := lc.GetPhysicalWorkingPath(clientPath)
-	newPsPath := lc.GetPhysicalWorkingPath(newPath)
+	newPsPath := lc.GetPhysicalWorkingPath(newName)
 
+	if fileExists(newPsPath) {
+		return "", ErrFileExisted
+	}
+	if err := os.MkdirAll(filepath.Dir(newPsPath), os.ModePerm); err != nil {
+		return "", err
+	}
 	err = os.Rename(oldPsPath, newPsPath)
 	if err != nil {
 		return "", err
@@ -122,11 +133,11 @@ func (lc *Storage) RenameFile(clientPath, newName string) (string, error) {
 
 	// Save rename action to database.
 	// If failed to save action, rename to the origin one
-	if err := lc.db.RenameFile(file, newPath); err != nil {
+	if err := lc.db.RenameFile(file, newName); err != nil {
 		os.Rename(newPsPath, oldPsPath)
 		return "", err
 	}
-	return newPath, nil
+	return newName, nil
 }
 
 // RollbackRenameFile will try to rollback of action renamefile
@@ -141,15 +152,12 @@ func (lc *Storage) RollbackRenameFile(path, newName string) (err error) {
 	return
 }
 
-// DeleteFile will copy the file to history zone, then remove the file in working zone
-// return the backup file and error if exists
-func (lc *Storage) DeleteFile(fileName string) (string, error) {
-	// Find the file from database, if no file found return error
+func (lc *Storage) physicalDeleteFile(fileName string) (*database.File, string, string, string, string, error) {
 	clientFileDir := filepath.Dir(fileName)
 
 	file, err := lc.db.GetFileByName(fileName)
 	if err != nil {
-		return "", err
+		return nil, "", "", "", "", err
 	}
 
 	// Copy the file to history zone
@@ -157,22 +165,34 @@ func (lc *Storage) DeleteFile(fileName string) (string, error) {
 	hsPath := lc.GetPhysicalHistoricalPath(fileName)
 	dst, err := copyFile(psPath, hsPath, true)
 	if err != nil {
-		return "", err
+		return nil, "", dst, psPath, hsPath, err
 	}
 
 	// Delete the actual file in working zone
 	err = os.Remove(psPath)
 	if err != nil {
+		// If can not save the file, copy the from the history zone to working zone and remove the file in history zone
+		if _, cfErr := copyFile(hsPath, psPath, false); cfErr == nil {
+			os.Remove(dst)
+		}
 		// Delete copyfile when removing the file is getting error
 		os.Remove(dst)
-		return "", err
+		return nil, "", dst, psPath, hsPath, err
 	}
-
-	// Remove the file in database and save its delete action
 	dstBase := filepath.Base(dst)
 	backupPath := filepath.Join(clientFileDir, dstBase)
-	err = lc.db.DeleteFile(file, backupPath)
+	return file, backupPath, dst, psPath, hsPath, nil
 
+}
+
+// DeleteFile will copy the file to history zone, then remove the file in working zone
+// return the backup file and error if exists
+func (lc *Storage) DeleteFile(fileName string) (string, error) {
+	file, backupPath, dst, psPath, hsPath, err := lc.physicalDeleteFile(fileName)
+	if err == nil {
+		return "", err
+	}
+	err = lc.db.DeleteFile(file, backupPath)
 	// If can not save the file, copy the from the history zone to working zone and remove the file in history zone
 	if err != nil {
 		if _, cfErr := copyFile(hsPath, psPath, false); cfErr == nil {

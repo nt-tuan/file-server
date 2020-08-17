@@ -6,6 +6,7 @@ import (
 	"image"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,6 +88,7 @@ func (lc *Storage) moveToTrash(filename string) (dst string, err error) {
 // the same, then return success. Otherise, attempt to create a hard link
 // between the two files. If that fail, copy the file contents from src to dst.
 func copyFile(src, dst string, forceIfDestExisted bool) (dest string, err error) {
+	log.Printf("Copying file from %s to %s", src, dst)
 	sfi, err := os.Stat(src)
 	dest = dst
 	if err != nil {
@@ -136,6 +138,9 @@ func copyFileContents(src, dst string) (err error) {
 		return
 	}
 	defer in.Close()
+	if err := os.MkdirAll(filepath.Dir(dst), os.ModePerm); err != nil {
+		return err
+	}
 	out, err := os.Create(dst)
 	if err != nil {
 		return

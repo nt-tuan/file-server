@@ -30,11 +30,13 @@ func (s *Server) HandleUploadImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if _, err := s.storage.AddFile(reader, model.Name); err != nil {
+	file, err := s.storage.AddFile(reader, model.Name)
+	if err != nil {
 		errorJSON(c, err)
 		return
 	}
-	c.Status(200)
+
+	c.JSON(200, models.NewImageInfoRes(file))
 }
 
 // HandleResize godocs
@@ -212,7 +214,7 @@ func (s *Server) HandleGetImageByID(c *gin.Context) {
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
 		return
 	}
-	file, err := s.db.GetFileByID(model.ID)
+	file, err := s.db.GetFullFileByID(model.ID)
 	if err != nil {
 		errorJSON(c, err)
 		return

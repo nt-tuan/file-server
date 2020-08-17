@@ -47,6 +47,16 @@ func (db *DB) GetFileByName(filename string) (file *File, err error) {
 	return
 }
 
+//GetFullFileByID return file
+func (db *DB) GetFullFileByID(id uint) (file *File, err error) {
+	file = &File{Model: gorm.Model{ID: id}}
+	err = db.
+		Preload("Tags").
+		Model(&File{}).
+		First(file).Error
+	return
+}
+
 //GetFileByID return file
 func (db *DB) GetFileByID(id uint) (file *File, err error) {
 	file = &File{Model: gorm.Model{ID: id}}
