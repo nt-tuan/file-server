@@ -82,10 +82,9 @@ func (s *Server) SetupRouter() {
 		AllowHeaders: []string{"*"},
 	}))
 	imageGroup := router.Group("images")
-
 	// Register public route
-	imageGroup.Static("/static", s.storage.WorkingDir)
-	imageGroup.GET("/size/:width/:height/*name", s.HandleResize)
+	imageGroup.Use(cacheHeader).Static("/static", s.storage.WorkingDir)
+	imageGroup.Use(cacheHeader).GET("/size/:width/:height/*name", s.HandleResize)
 
 	// Register private route
 	adminGroup := router.Group("/admin")
@@ -132,4 +131,8 @@ func (s *Server) Start() {
 		log.Fatal("Server forced to shutdown:", err)
 	}
 	log.Println("Server exiting")
+}
+
+func cacheHeader(c *gin.Context) {
+	c.Header("Cache-Control", "public, max-age=108000")
 }
