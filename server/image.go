@@ -70,6 +70,8 @@ func (s *Server) HandleResize(c *gin.Context) {
 	contentType := "image/" + strings.Trim(ext, ".")
 	extraHeaders := map[string]string{
 		"Content-Disposition": `inline`,
+		"Cache-Control":       "public",
+		"max-age":             "108000",
 	}
 	c.DataFromReader(200, int64(contentLength), contentType, resReader, extraHeaders)
 }
