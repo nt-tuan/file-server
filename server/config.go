@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/thanhtuan260593/file-server/server/models"
+	"github.com/ptcoffee/image-server/server/models"
 )
 
 //MaxBound of image

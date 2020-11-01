@@ -4,8 +4,8 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/thanhtuan260593/file-server/server/models"
-	localstorage "github.com/thanhtuan260593/file-server/storages/local"
+	"github.com/ptcoffee/image-server/server/models"
+	localstorage "github.com/ptcoffee/image-server/storages/local"
 )
 
 // func parseImageToReader(lc *localstorage.Storage, img image.Image, ext string) (io.Reader, int64, error) {

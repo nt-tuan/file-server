@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	localstorage "github.com/thanhtuan260593/file-server/storages/local"
+	localstorage "github.com/ptcoffee/image-server/storages/local"
 )
 
 var testFolder = "../_test"

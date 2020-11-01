@@ -1,6 +1,6 @@
 version: "3"
 services:
-  file-server:
+  image-server:
     image: gcr.io/ptcloud/image-server:latest
     depends_on:
       - db
@@ -31,5 +31,5 @@ services:
     ports:
       - 54321:5432
     environment:
-      POSTGRES_USER: file-server
+      POSTGRES_USER: image-server
     image: postgres:11.2-alpine

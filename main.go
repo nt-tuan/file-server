@@ -4,8 +4,8 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
-	"github.com/thanhtuan260593/file-server/database"
-	"github.com/thanhtuan260593/file-server/server"
+	"github.com/ptcoffee/image-server/database"
+	"github.com/ptcoffee/image-server/server"
 )
 
 // @title Swagger Example API

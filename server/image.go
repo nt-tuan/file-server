@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/thanhtuan260593/file-server/imaging"
-	"github.com/thanhtuan260593/file-server/server/models"
+	"github.com/ptcoffee/image-server/imaging"
+	"github.com/ptcoffee/image-server/server/models"
 )
 
 // HandleUploadImage godocs
