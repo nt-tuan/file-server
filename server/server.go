@@ -76,10 +76,7 @@ func (s *Server) SetupRouter() {
 	// programatically set swagger info
 	setupSwaggerInfo()
 	router := gin.Default()
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"*"}
-	corsConfig.AllowMethods = []string{"GET", "PUT", "POST", "DELETE"}
-	router.Use(cors.New(corsConfig))
+	router.Use(cors.Default())
 	imageGroup := router.Group("images")
 	// Register public route
 	imageGroup.Use(cacheHeader).Static("/static", s.storage.WorkingDir)
