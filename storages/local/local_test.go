@@ -12,7 +12,7 @@ import (
 
 var store *Storage
 var addedFile, replacedFile URLImage
-var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
+var dbURL = "postgres://image-server:@:54321/image-server?sslmode=disable"
 
 func loadExternalFile() {
 	addedFile = imageURLs[0]

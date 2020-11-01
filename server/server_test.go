@@ -22,7 +22,7 @@ import (
 var server *Server
 var addedFilePath string = "ERROR_FIFIFIF.JPG"
 var code = 1
-var dbURL = "postgres://file-server:@:54321/file-server?sslmode=disable"
+var dbURL = "postgres://image-server:@:54321/image-server?sslmode=disable"
 
 func setup() {
 	db := database.NewClean(dbURL)
