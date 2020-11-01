@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/thanhtuan260593/file-server/database"
+	"github.com/ptcoffee/image-server/database"
 )
 
 // Storage file storage

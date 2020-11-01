@@ -6,7 +6,7 @@ import (
 	"image/png"
 	"io"
 
-	localstorage "github.com/thanhtuan260593/file-server/storages/local"
+	localstorage "github.com/ptcoffee/image-server/storages/local"
 	pngquant "github.com/yusukebe/go-pngquant"
 )
 

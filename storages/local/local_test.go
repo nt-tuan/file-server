@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
-	"github.com/thanhtuan260593/file-server/database"
+	"github.com/ptcoffee/image-server/database"
 	"github.com/twinj/uuid"
 )
 

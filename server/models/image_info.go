@@ -1,6 +1,6 @@
 package models
 
-import "github.com/thanhtuan260593/file-server/database"
+import "github.com/ptcoffee/image-server/database"
 
 //ImageIDReq model bind id from uri
 type ImageIDReq struct {

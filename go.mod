@@ -1,4 +1,4 @@
-module github.com/thanhtuan260593/file-server
+module github.com/ptcoffee/image-server
 
 go 1.14
 

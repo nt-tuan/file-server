@@ -15,11 +15,11 @@ import (
 
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"github.com/swaggo/gin-swagger/swaggerFiles"
-	"github.com/thanhtuan260593/file-server/docs"
+	"github.com/ptcoffee/image-server/docs"
 
 	// swagger embed files
-	"github.com/thanhtuan260593/file-server/database"
-	localstorage "github.com/thanhtuan260593/file-server/storages/local"
+	"github.com/ptcoffee/image-server/database"
+	localstorage "github.com/ptcoffee/image-server/storages/local"
 )
 
 //Server struct
@@ -76,7 +76,11 @@ func (s *Server) SetupRouter() {
 	// programatically set swagger info
 	setupSwaggerInfo()
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("authorization")
+	router.Use(cors.New(config))
 	imageGroup := router.Group("images")
 	// Register public route
 	imageGroup.Use(cacheHeader).Static("/static", s.storage.WorkingDir)
@@ -93,6 +97,9 @@ func (s *Server) SetupRouter() {
 	adminGroup.PUT("/image/:id/tag/:tag", s.HandleAddImageTag)
 	adminGroup.DELETE("/image/:id/tag/:tag", s.HandleRemoveImageTag)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/health/ready", func(c *gin.Context) {
+		c.JSON(200, map[string]bool{"ok": true})
+	})
 	s.router = router
 }
 

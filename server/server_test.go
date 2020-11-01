@@ -15,8 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-	"github.com/thanhtuan260593/file-server/database"
-	localstorage "github.com/thanhtuan260593/file-server/storages/local"
+	"github.com/ptcoffee/image-server/database"
+	localstorage "github.com/ptcoffee/image-server/storages/local"
 )
 
 var server *Server
