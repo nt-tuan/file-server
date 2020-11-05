@@ -59,13 +59,23 @@ func TestAddFile(t *testing.T) {
 }
 
 func TestRemoveFile(t *testing.T) {
-	t.Run("Create file to remove file", TestAddFile)
-	historyFile, err := store.DeleteFile(addedFile.DestName)
+	reset()
+	path := filepath.Join(testImageSourceFolder, addedFile.DestName)
+	reader, err := os.Open(path)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Log(historyFile)
+	// var fname string
+	file, err := store.AddFile(reader, addedFile.DestName)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if err := store.DeleteFile(file); err != nil {
+		t.Error(err)
+		return
+	}
 }
 
 func TestRenameFile(t *testing.T) {
@@ -79,14 +89,26 @@ func TestRenameFile(t *testing.T) {
 }
 
 func TestReplaceFile(t *testing.T) {
-	t.Run("Create file to rename file", TestAddFile)
-	path := filepath.Join(testImageSourceFolder, replacedFile.DestName)
+	reset()
+	path := filepath.Join(testImageSourceFolder, addedFile.DestName)
 	reader, err := os.Open(path)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if _, err := store.ReplaceFile(addedFile.DestName, reader); err != nil {
+	// var fname string
+	file, err := store.AddFile(reader, addedFile.DestName)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	replacedPath := filepath.Join(testImageSourceFolder, replacedFile.DestName)
+	replaceReader, err := os.Open(replacedPath)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if _, err := store.ReplaceFile(file, replaceReader); err != nil {
 		t.Error(err)
 		return
 	}

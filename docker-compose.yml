@@ -1,12 +1,11 @@
 version: "3"
 services:
   image-server:
-    image: gcr.io/ptcloud/image-server:latest
+    build: .
     depends_on:
       - db
     ports:
       - 5000:5000
-    build: .
     volumes:
       - ./files/images:/files/images
       - ./files/_history:/files/_history
