@@ -14,9 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/assert"
 	"github.com/ptcoffee/image-server/database"
 	localstorage "github.com/ptcoffee/image-server/storages/local"
+	"github.com/stretchr/testify/assert"
 )
 
 var server *Server
@@ -98,7 +98,7 @@ func requestAddFile(method, url string) (*httptest.ResponseRecorder, error) {
 
 func TestAddFile(t *testing.T) {
 	setup()
-	recorder, err := requestAddFile("PUT", "/admin/image")
+	recorder, err := requestAddFile("POST", "/admin/image")
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -112,7 +112,7 @@ func TestAddFile(t *testing.T) {
 func TestAddDuplicatedFile(t *testing.T) {
 	reset()
 	t.Run("Add new file to delete", TestAddFile)
-	recorder, err := requestAddFile("PUT", "/admin/image")
+	recorder, err := requestAddFile("POST", "/admin/image")
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -236,7 +236,7 @@ func TestGetImageByIDShouldFail(t *testing.T) {
 func TestGetResizedImage(t *testing.T) {
 	reset()
 	addedFilePath = filepath.Join(testImageSourceFolder, "test_resizing_image.png")
-	recorder, err := requestAddFile("PUT", "/admin/image")
+	recorder, err := requestAddFile("POST", "/admin/image")
 	if err != nil {
 		assert.Error(t, err)
 		return
@@ -255,7 +255,7 @@ func TestGetResizedImageShouldWork(t *testing.T) {
 	os.Setenv("IMAGE_MAX_HEIGHT", "100")
 	setup()
 	addedFilePath = filepath.Join(testImageSourceFolder, "test_resizing_image.png")
-	recorder, err := requestAddFile("PUT", "/admin/image")
+	recorder, err := requestAddFile("POST", "/admin/image")
 	if err != nil {
 		assert.Error(t, err)
 		return
