@@ -244,20 +244,11 @@
                 "operationId": "GetImages",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "pageCurrent",
-                        "in": "query"
-                    },
-                    {
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
+                        "collectionFormat": "multi",
                         "name": "orderBy",
                         "in": "query"
                     },
@@ -266,7 +257,18 @@
                         "items": {
                             "type": "string"
                         },
+                        "collectionFormat": "multi",
                         "name": "orderDir",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageCurrent",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
                         "in": "query"
                     },
                     {
@@ -274,6 +276,7 @@
                         "items": {
                             "type": "string"
                         },
+                        "collectionFormat": "multi",
                         "name": "tags",
                         "in": "query"
                     }
@@ -351,46 +354,6 @@
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "models.ImageRenameReq": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ImagesReq": {
-            "type": "object",
-            "properties": {
-                "orderBy": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "orderDir": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "pageCurrent": {
-                    "type": "integer"
-                },
-                "pageSize": {
                     "type": "integer"
                 },
                 "tags": {

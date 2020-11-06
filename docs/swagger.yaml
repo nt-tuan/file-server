@@ -16,32 +16,6 @@ definitions:
           type: string
         type: array
     type: object
-  models.ImageRenameReq:
-    properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  models.ImagesReq:
-    properties:
-      orderBy:
-        items:
-          type: string
-        type: array
-      orderDir:
-        items:
-          type: string
-        type: array
-      pageCurrent:
-        type: integer
-      pageSize:
-        type: integer
-      tags:
-        items:
-          type: string
-        type: array
-    type: object
 host: localhost:5000
 info:
   contact:
@@ -207,23 +181,26 @@ paths:
       description: Get list of images information
       operationId: GetImages
       parameters:
-      - in: query
-        name: pageSize
-        type: integer
-      - in: query
-        name: pageCurrent
-        type: integer
-      - in: query
+      - collectionFormat: multi
+        in: query
         items:
           type: string
         name: orderBy
         type: array
-      - in: query
+      - collectionFormat: multi
+        in: query
         items:
           type: string
         name: orderDir
         type: array
       - in: query
+        name: pageCurrent
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - collectionFormat: multi
+        in: query
         items:
           type: string
         name: tags

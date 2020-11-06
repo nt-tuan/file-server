@@ -91,7 +91,7 @@ func (s *Server) SetupRouter() {
 	adminGroup.GET("/images", s.HandleGetImages)
 	adminGroup.GET("/image/:id", s.HandleGetImageByID)
 	adminGroup.DELETE("/image/:id", s.HandleDeleteImage)
-	adminGroup.PUT("/image", s.HandleUploadImage)
+	adminGroup.POST("/image", s.HandleUploadImage)
 	adminGroup.POST("/image/:id/rename", s.HandleRenameImage)
 	adminGroup.POST("/image/:id/replace", s.HandleReplaceImage)
 	adminGroup.PUT("/image/:id/tag/:tag", s.HandleAddImageTag)
