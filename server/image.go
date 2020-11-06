@@ -120,7 +120,7 @@ func (s *Server) HandleRenameImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if _, err := s.storage.RenameFile(file.Fullname, model.Name); err != nil {
+	if err := s.storage.RenameFile(file, model.Name); err != nil {
 		errorJSON(c, err)
 		return
 	}

@@ -79,9 +79,22 @@ func TestRemoveFile(t *testing.T) {
 }
 
 func TestRenameFile(t *testing.T) {
-	t.Run("Create file to rename file", TestAddFile)
+	reset()
+	path := filepath.Join(testImageSourceFolder, addedFile.DestName)
+	reader, err := os.Open(path)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// var fname string
+	file, err := store.AddFile(reader, addedFile.DestName)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	newName := uuid.NewV4().String() + ".jpg"
-	if _, err := store.RenameFile(addedFile.DestName, newName); err != nil {
+	if err := store.RenameFile(file, newName); err != nil {
 		t.Error(err)
 		return
 	}

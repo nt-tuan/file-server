@@ -11,8 +11,8 @@ var (
 )
 
 //AddFileHistory to db
-func (db *DB) AddFileHistory(file *File, action string, dest string) error {
-	fileHistory := NewFileHistory(file, action, dest)
+func (db *DB) AddFileHistory(file *File, action string, fullname string, backupFullname *string) error {
+	fileHistory := NewFileHistory(file, action, fullname, backupFullname)
 	if err := db.Model(&FileHistory{}).
 		Create(&fileHistory).
 		Error; err != nil {

@@ -43,7 +43,8 @@ func TestAddFile(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, "/deleted/zzz.txt"); err != nil {
+	backup := "/deleted/zzz.txt"
+	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, &backup); err != nil {
 		t.Error(err)
 	}
 }
