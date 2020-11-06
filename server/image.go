@@ -90,7 +90,7 @@ func (s *Server) HandleDeleteImage(c *gin.Context) {
 	if err != nil {
 		errorJSON(c, err)
 	}
-	if _, err := s.storage.DeleteFile(file.Fullname); err != nil {
+	if err := s.storage.DeleteFile(file); err != nil {
 		errorJSON(c, err)
 		return
 	}
@@ -120,7 +120,7 @@ func (s *Server) HandleRenameImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if _, err := s.storage.RenameFile(file.Fullname, model.Name); err != nil {
+	if err := s.storage.RenameFile(file, model.Name); err != nil {
 		errorJSON(c, err)
 		return
 	}
@@ -155,7 +155,7 @@ func (s *Server) HandleReplaceImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if _, err := s.storage.ReplaceFile(file.Fullname, reader); err != nil {
+	if _, err := s.storage.ReplaceFile(file, reader); err != nil {
 		errorJSON(c, err)
 		return
 	}

@@ -89,7 +89,7 @@ func (db *DB) CreateFile(file *File) error {
 		Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, CreateAction, file.Fullname)
+	return db.AddFileHistory(file, CreateAction, file.Fullname, nil)
 }
 
 //RenameFile in database
@@ -101,16 +101,27 @@ func (db *DB) RenameFile(file *File, newName string) error {
 		Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, RenameAction, file.Fullname)
+	return db.AddFileHistory(file, RenameAction, file.Fullname, nil)
+}
+
+// ReplaceFile in database
+func (db *DB) ReplaceFile(file *File, newName string, backupName *string) error {
+	file.Fullname = newName
+	file.ExtractParts()
+	if err := db.Model(&File{}).
+		Updates(file).Error; err != nil {
+		return err
+	}
+	return db.AddFileHistory(file, ReplaceAction, newName, backupName)
 }
 
 //DeleteFile in database
-func (db *DB) DeleteFile(file *File, backup string) error {
+func (db *DB) DeleteFile(file *File, backup *string) error {
 	if err := db.Model(&File{}).
 		Delete(file).Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, DeleteAction, backup)
+	return db.AddFileHistory(file, DeleteAction, file.Fullname, backup)
 }
 
 // UntrackDeleteFile will try to delete file in db without leaving a bread piece

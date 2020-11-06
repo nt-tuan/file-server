@@ -13,9 +13,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"github.com/ptcoffee/image-server/docs"
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"github.com/swaggo/gin-swagger/swaggerFiles"
-	"github.com/ptcoffee/image-server/docs"
 
 	// swagger embed files
 	"github.com/ptcoffee/image-server/database"
