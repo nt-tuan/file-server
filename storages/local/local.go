@@ -122,7 +122,7 @@ func (lc *Storage) RenameFile(file *database.File, newName string) error {
 func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
 	path := lc.GetPhysicalWorkingPath(file.Fullname)
 	if fileExists(path) {
-		backupPath := lc.GetPhysicalHistoricalPath(file.Fullname)
+		backupPath := lc.newBackupPath(file.Fullname)
 		err := moveFile(path, backupPath)
 		if err != nil {
 			return nil, err
@@ -145,7 +145,7 @@ func (lc *Storage) DeleteFile(file *database.File) error {
 // RollbackDeleteFile will try to rollback action deletefile
 // Get the backup file and copy that file to working zone
 func (lc *Storage) RollbackDeleteFile(fileName, bkFile string) error {
-	backupPath := lc.GetPhysicalHistoricalPath(bkFile)
+	backupPath := lc.getBackupPath(bkFile)
 	path := lc.GetPhysicalWorkingPath(fileName)
 	if err := moveFile(backupPath, path); err != nil {
 		return err

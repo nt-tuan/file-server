@@ -10,18 +10,26 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/twinj/uuid"
 )
 
-//GetPhysicalWorkingPath from client path
-func (lc *Storage) GetPhysicalWorkingPath(clientPath string) (rs string) {
-	rs = filepath.Join(lc.WorkingDir, clientPath)
+//getPath from client path
+func (lc *Storage) getPath(fullname string) (rs string) {
+	rs = filepath.Join(lc.WorkingDir, fullname)
 	return
 }
 
-//GetPhysicalHistoricalPath from client path
-func (lc *Storage) GetPhysicalHistoricalPath(clientPath string) (rs string) {
+//getBackupPath from client path
+func (lc *Storage) getBackupPath(clientPath string) (rs string) {
 	rs = filepath.Join(lc.HistoryDir, clientPath)
 	return
+}
+
+func (lc *Storage) newBackupPath(fullname string) (rs string) {
+	ext := filepath.Ext(fullname)
+	name := uuid.NewV4().String()
+	return filepath.Join(lc.HistoryDir, name+"."+ext)
 }
 
 func tryGetNotExistFilename(path string) (string, error) {
