@@ -94,8 +94,8 @@ func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, 
 
 //RenameFile in storage
 func (lc *Storage) RenameFile(file *database.File, newName string) error {
-	oldPath := lc.GetPhysicalWorkingPath(file.Fullname)
-	newPath := lc.GetPhysicalWorkingPath(newName)
+	oldPath := lc.getPath(file.Fullname)
+	newPath := lc.getPath(newName)
 
 	if fileExists(newPath) {
 		return ErrFileExisted
@@ -120,7 +120,7 @@ func (lc *Storage) RenameFile(file *database.File, newName string) error {
 }
 
 func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
-	path := lc.GetPhysicalWorkingPath(file.Fullname)
+	path := lc.getPath(file.Fullname)
 	if fileExists(path) {
 		backupPath := lc.newBackupPath(file.Fullname)
 		err := moveFile(path, backupPath)
@@ -146,7 +146,7 @@ func (lc *Storage) DeleteFile(file *database.File) error {
 // Get the backup file and copy that file to working zone
 func (lc *Storage) RollbackDeleteFile(fileName, bkFile string) error {
 	backupPath := lc.getBackupPath(bkFile)
-	path := lc.GetPhysicalWorkingPath(fileName)
+	path := lc.getPath(fileName)
 	if err := moveFile(backupPath, path); err != nil {
 		return err
 	}
