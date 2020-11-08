@@ -13,6 +13,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"github.com/ptcoffee/image-server/cloudflare"
 	"github.com/ptcoffee/image-server/docs"
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 	"github.com/swaggo/gin-swagger/swaggerFiles"
@@ -24,11 +25,12 @@ import (
 
 //Server struct
 type Server struct {
-	db      *database.DB
-	config  *Config
-	storage *localstorage.Storage
-	router  *gin.Engine
-	port    string
+	db            *database.DB
+	config        *Config
+	storage       *localstorage.Storage
+	router        *gin.Engine
+	port          string
+	cloudflareAPI *cloudflare.API
 }
 
 //NewServer will instantiate a new server
@@ -47,7 +49,7 @@ func NewServer(db *database.DB) *Server {
 			sv.db.LogMode(true)
 		}
 	}
-
+	sv.cloudflareAPI = cloudflare.New()
 	return &sv
 }
 
@@ -83,8 +85,8 @@ func (s *Server) SetupRouter() {
 	router.Use(cors.New(config))
 	imageGroup := router.Group("images")
 	// Register public route
-	imageGroup.Use(cacheHeader).Static("/static", s.storage.WorkingDir)
-	imageGroup.Use(cacheHeader).GET("/size/:width/:height/*name", s.HandleResize)
+	imageGroup.Static("/static", s.storage.WorkingDir)
+	imageGroup.GET("/size/:width/:height/*name", s.HandleResize)
 
 	// Register private route
 	adminGroup := router.Group("/admin")
@@ -96,6 +98,7 @@ func (s *Server) SetupRouter() {
 	adminGroup.POST("/image/:id/replace", s.HandleReplaceImage)
 	adminGroup.PUT("/image/:id/tag/:tag", s.HandleAddImageTag)
 	adminGroup.DELETE("/image/:id/tag/:tag", s.HandleRemoveImageTag)
+	adminGroup.POST("/image/:id/purgeCache", s.HandlePurgeCDNCache)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/health/ready", func(c *gin.Context) {
 		c.JSON(200, map[string]bool{"ok": true})
@@ -134,8 +137,4 @@ func (s *Server) Start() {
 		log.Fatal("Server forced to shutdown:", err)
 	}
 	log.Println("Server exiting")
-}
-
-func cacheHeader(c *gin.Context) {
-	c.Header("Cache-Control", "public, max-age=108000")
 }
