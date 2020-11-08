@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -9,6 +11,10 @@ import (
 	"github.com/ptcoffee/image-server/imaging"
 	"github.com/ptcoffee/image-server/server/models"
 )
+
+func getImageURL(fullname string) string {
+	return "https://" + os.Getenv("BASE_PATH") + "/images/static/" + fullname
+}
 
 // HandleUploadImage godocs
 // @Id UploadImage
@@ -94,7 +100,11 @@ func (s *Server) HandleDeleteImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+	if err := s.cloudflareAPI.PurgeCache(getImageURL(file.Fullname)); err != nil {
+		log.Println(err)
+	}
 	c.Status(200)
+
 }
 
 // HandleRenameImage godocs
@@ -159,7 +169,6 @@ func (s *Server) HandleReplaceImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-
 	c.Status(200)
 }
 
@@ -269,4 +278,26 @@ func (s *Server) HandleRemoveImageTag(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+}
+
+// HandlePurgeCDNCache godocs
+// @Id image
+// @Summary Clear cache of image
+// @Param id path uint true "ID of image"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/purgeCache [post]
+func (s *Server) HandlePurgeCDNCache(c *gin.Context) {
+	var model models.ImageIDReq
+	if err := c.BindUri(&model); err != nil {
+		return
+	}
+	file, err := s.db.GetFileByID(model.ID)
+	if err != nil {
+		errorJSON(c, err)
+	}
+	if err := s.cloudflareAPI.PurgeCache(getImageURL(file.Fullname)); err != nil {
+		errorJSON(c, err)
+	}
+	c.Status(200)
 }

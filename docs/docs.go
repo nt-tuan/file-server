@@ -118,6 +118,30 @@ var doc = `{
                 }
             }
         },
+        "/admin/image/{id}/purgeCache": {
+            "post": {
+                "summary": "Clear cache of image",
+                "operationId": "image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID of image",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/image/{id}/rename": {
             "post": {
                 "consumes": [

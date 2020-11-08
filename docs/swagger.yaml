@@ -87,6 +87,22 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorRes'
       summary: Get an image information
+  /admin/image/{id}/purgeCache:
+    post:
+      operationId: image
+      parameters:
+      - description: ID of image
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Clear cache of image
   /admin/image/{id}/rename:
     post:
       consumes:

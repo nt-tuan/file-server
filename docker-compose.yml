@@ -13,13 +13,15 @@ services:
       DATABASE_URL: postgres://fsv:@db:5432/fsv?sslmode=disable
       DATABASE_LOG_MODE: "true"
       HOST: localhost:5000
-      BASE_PATH: /
+      BASE_PATH: "localhost:5000"
       SWAGGER_TITLE: "Image server api information"
       SWAGGER_VERSION: "v1"
       INIT_SAMPLE_DATA: "true"
       PORT: :5000
       IMAGE_MAX_WIDTH: 3000
       IMAGE_MAX_HEIGHT: 2000
+      CLOUDFLARE_AUTH_TOKEN: yIMnTqslYIDRDFlQWK57REVLChlzodOcZphO6F0m
+      CLOUDFLARE_ZONE_ID: 26156ea53982c3d47e7a9798ccc85ae5
   db:
     ports:
       - 5432:5432
