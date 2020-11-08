@@ -29,7 +29,7 @@ func (lc *Storage) getBackupPath(clientPath string) (rs string) {
 func (lc *Storage) newBackupPath(fullname string) (rs string) {
 	ext := filepath.Ext(fullname)
 	name := uuid.NewV4().String()
-	return filepath.Join(lc.HistoryDir, name+"."+ext)
+	return filepath.Join(lc.HistoryDir, name+ext)
 }
 
 func tryGetNotExistFilename(path string) (string, error) {
