@@ -8,12 +8,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type FileAction string
+
 // FileActions
 var (
-	CreateAction  = "Created"
-	RenameAction  = "Renamed"
-	ReplaceAction = "Replaced"
-	DeleteAction  = "Deleted"
+	CreateAction  FileAction = "create"
+	RenameAction  FileAction = "rename"
+	ReplaceAction FileAction = "replace"
+	DeleteAction  FileAction = "delete"
+	RestoreAction FileAction = "retore"
 )
 
 // Errors
@@ -39,15 +42,15 @@ type Tag struct {
 // FileHistory table store history of file changing
 type FileHistory struct {
 	gorm.Model
-	Fullname       string
-	BackupFullname *string
-	ActionType     string
-	FileID         uint
+	Fullname       string     `json:"fullname"`
+	BackupFullname *string    `json:"backupFullname"`
+	ActionType     FileAction `json:"actionType"`
+	FileID         uint       `json:"fileID"`
 	File           *File
 }
 
 //NewFileHistory created from File and action
-func NewFileHistory(f *File, action string, fullname string, backupFullname *string) *FileHistory {
+func NewFileHistory(f *File, action FileAction, fullname string, backupFullname *string) *FileHistory {
 	var h = FileHistory{}
 	h.Fullname = fullname
 	h.BackupFullname = backupFullname

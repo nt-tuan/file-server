@@ -2,8 +2,8 @@ package models
 
 import "github.com/ptcoffee/image-server/database"
 
-//ImageIDReq model bind id from uri
-type ImageIDReq struct {
+//IDReq model bind id from uri
+type IDReq struct {
 	ID uint `uri:"id" binding:"required"`
 }
 

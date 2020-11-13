@@ -26,10 +26,10 @@ func (lc *Storage) getBackupPath(clientPath string) (rs string) {
 	return
 }
 
-func (lc *Storage) newBackupPath(fullname string) (rs string) {
+func (lc *Storage) newBackupFullname(fullname string) (rs string) {
 	ext := filepath.Ext(fullname)
 	name := uuid.NewV4().String()
-	return filepath.Join(lc.HistoryDir, name+ext)
+	return name + ext
 }
 
 func tryGetNotExistFilename(path string) (string, error) {
@@ -55,8 +55,8 @@ func (lc *Storage) correctFileName(source string) (string, string, error) {
 	return "", "", ErrFileExisted
 }
 
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
 	}

@@ -88,6 +88,10 @@ func (s *Server) SetupRouter() {
 	imageGroup.Static("/static", s.storage.WorkingDir)
 	imageGroup.GET("/size/:width/:height/*name", s.HandleResize)
 
+	// History route
+	historyGroup := router.Group("history")
+	historyGroup.Static("/static", s.storage.HistoryDir)
+
 	// Register private route
 	adminGroup := router.Group("/admin")
 	adminGroup.GET("/images", s.HandleGetImages)
@@ -98,6 +102,9 @@ func (s *Server) SetupRouter() {
 	adminGroup.POST("/image/:id/replace", s.HandleReplaceImage)
 	adminGroup.PUT("/image/:id/tag/:tag", s.HandleAddImageTag)
 	adminGroup.DELETE("/image/:id/tag/:tag", s.HandleRemoveImageTag)
+	adminGroup.GET("/image/:id/history", s.HandleGetImageHistory)
+	adminGroup.GET("/deletedImages", s.HandleGetDeletedFiles)
+	adminGroup.POST("/deletedImage/:id/restore", s.HandleRecoverDeletedFile)
 	adminGroup.POST("/image/:id/purgeCache", s.HandlePurgeCDNCache)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/health/ready", func(c *gin.Context) {

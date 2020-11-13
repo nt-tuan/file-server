@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -88,7 +89,7 @@ func (s *Server) HandleResize(c *gin.Context) {
 // @Failure 400 {object} models.ErrorRes
 // @Router /admin/image/{id} [delete]
 func (s *Server) HandleDeleteImage(c *gin.Context) {
-	var model models.ImageIDReq
+	var model models.IDReq
 	if err := c.BindUri(&model); err != nil {
 		return
 	}
@@ -118,7 +119,7 @@ func (s *Server) HandleDeleteImage(c *gin.Context) {
 // @Router /admin/image/{id}/rename [post]
 func (s *Server) HandleRenameImage(c *gin.Context) {
 	var model models.ImageRenameReq
-	var modelID models.ImageIDReq
+	var modelID models.IDReq
 	if err := errorJSON(c, c.BindJSON(&model)); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (s *Server) HandleRenameImage(c *gin.Context) {
 // @Failure 400 {object} models.ErrorRes
 // @Router /admin/image/{id}/replace [post]
 func (s *Server) HandleReplaceImage(c *gin.Context) {
-	var model models.ImageIDReq
+	var model models.IDReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
 		return
 	}
@@ -219,7 +220,7 @@ func (s *Server) HandleGetImages(c *gin.Context) {
 // @Failure 400 {object} models.ErrorRes
 // @Router /admin/image/{id} [get]
 func (s *Server) HandleGetImageByID(c *gin.Context) {
-	var model models.ImageIDReq
+	var model models.IDReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {
 		return
 	}
@@ -281,14 +282,14 @@ func (s *Server) HandleRemoveImageTag(c *gin.Context) {
 }
 
 // HandlePurgeCDNCache godocs
-// @Id image
+// @Id HandlePurgeCDNCache
 // @Summary Clear cache of image
 // @Param id path uint true "ID of image"
 // @Success 200
 // @Failure 400 {object} models.ErrorRes
 // @Router /admin/image/{id}/purgeCache [post]
 func (s *Server) HandlePurgeCDNCache(c *gin.Context) {
-	var model models.ImageIDReq
+	var model models.IDReq
 	if err := c.BindUri(&model); err != nil {
 		return
 	}
@@ -300,4 +301,68 @@ func (s *Server) HandlePurgeCDNCache(c *gin.Context) {
 		errorJSON(c, err)
 	}
 	c.Status(200)
+}
+
+// HandleGetImageHistory godocs
+// @Id HandleGetImageHistory
+// @Summary Get list of history changes of an image
+// @Description Get list of images information
+// @Produce  json
+// @Param id path uint true "ID of image"
+// @Success 200 {object} []database.FileHistory
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/image/{id}/history [get]
+func (s *Server) HandleGetImageHistory(c *gin.Context) {
+	var model models.IDReq
+	if err := errorJSON(c, c.BindUri(&model)); err != nil {
+		return
+	}
+	records, err := s.db.GetFileHistoryRecords(model.ID)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	c.JSON(200, models.NewHistoryInfos(records))
+}
+
+// HandleGetDeletedFiles godocs
+// @Id HandleGetDeletedFiles
+// @Summary Get list of deleted files
+// @Success 200 {object} []database.FileHistory
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/deletedImages
+func (s *Server) HandleGetDeletedFiles(c *gin.Context) {
+	deletedFiles, err := s.db.GetDeletedFiles()
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	c.JSON(200, models.NewHistoryInfos(deletedFiles))
+}
+
+// HandleRecoverDeletedFile godocs
+// @Id HandleRecoverDeletedFile
+// @Summary Recover a deleted file
+// @Success 200 {object} models.ImageInfoRes
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/deletedImage/{id}/restore
+func (s *Server) HandleRecoverDeletedFile(c *gin.Context) {
+	var model models.IDReq
+	if err := errorJSON(c, c.BindUri(&model)); err != nil {
+		return
+	}
+	deletedFile, err := s.db.GetDeletedFileByID(model.ID)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	if deletedFile.BackupFullname == nil {
+		errorJSON(c, errors.New("file can not restored"))
+	}
+	restoredFile, err := s.storage.RestoreDeletedFile(*deletedFile)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	c.JSON(200, models.NewImageInfoRes(restoredFile))
 }

@@ -72,14 +72,14 @@ func (lc *Storage) AddFile(reader io.Reader, fileName string) (*database.File, e
 
 	// If failed to save to database, delete the file
 	if err != nil {
-		lc.DeleteFile(&fileModel)
+		lc.physicalDeleteFile(&fileModel)
 	}
 	return &fileModel, err
 }
 
 // ReplaceFile in storage
 func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, error) {
-	backupPath, err := lc.physicalDeleteFile(file)
+	backupFullname, err := lc.physicalDeleteFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,8 @@ func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, 
 	if err != nil {
 		return nil, err
 	}
-	lc.db.ReplaceFile(file, newName, backupPath)
-	return backupPath, nil
+	lc.db.ReplaceFile(file, newName, backupFullname)
+	return backupFullname, nil
 }
 
 //RenameFile in storage
@@ -122,12 +122,13 @@ func (lc *Storage) RenameFile(file *database.File, newName string) error {
 func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
 	path := lc.getPath(file.Fullname)
 	if fileExists(path) {
-		backupPath := lc.newBackupPath(file.Fullname)
+		backupFullname := lc.newBackupFullname(file.Fullname)
+		backupPath := lc.getBackupPath(backupFullname)
 		err := moveFile(path, backupPath)
 		if err != nil {
 			return nil, err
 		}
-		return &backupPath, nil
+		return &backupFullname, nil
 	}
 	return nil, nil
 }
@@ -135,24 +136,37 @@ func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
 // DeleteFile will copy the file to history zone, then remove the file in working zone
 // return the backup file and error if exists
 func (lc *Storage) DeleteFile(file *database.File) error {
-	backupPath, err := lc.physicalDeleteFile(file)
+	backupFullname, err := lc.physicalDeleteFile(file)
 	if err != nil {
 		return err
 	}
-	return lc.db.DeleteFile(file, backupPath)
+	return lc.db.DeleteFile(file, backupFullname)
 }
 
-// RollbackDeleteFile will try to rollback action deletefile
+// RestoreDeletedFile will try to rollback action deletefile
 // Get the backup file and copy that file to working zone
-func (lc *Storage) RollbackDeleteFile(fileName, bkFile string) error {
-	backupPath := lc.getBackupPath(bkFile)
-	path := lc.getPath(fileName)
-	if err := moveFile(backupPath, path); err != nil {
-		return err
+func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory) (*database.File, error) {
+	if historyFile.BackupFullname == nil {
+		return nil, ErrFileNotFound
 	}
-	file := database.File{Fullname: fileName}
+	path := lc.getPath(historyFile.Fullname)
+	if fileExists(path) {
+		return nil, ErrFileExisted
+	}
+	backupPath := lc.getBackupPath(*historyFile.BackupFullname)
+	if err := moveFile(backupPath, path); err != nil {
+		return nil, err
+	}
+	file := database.File{Fullname: historyFile.Fullname}
 	err := lc.db.CreateFile(&file)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	err = lc.db.RestoreDeletedFile(historyFile)
+	if err != nil {
+		return nil, err
+	}
+	return &file, err
 }
 
 // GetImage from filename
