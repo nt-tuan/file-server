@@ -23,7 +23,7 @@ type Storage struct {
 func NewStorage(db *database.DB) *Storage {
 	var local = Storage{}
 	local.db = db
-	local.ValidExts = []string{PngExt, SvgExt}
+	local.ValidExts = []string{PNGExt, SVGExt, JPEGExt, JPGExt, GIFExt, WEBPExt}
 	local.WorkingDir = DefaultWorkingDir
 	local.HistoryDir = DefaultHistoryDir
 
@@ -60,9 +60,12 @@ func (lc *Storage) physicalAddFile(reader io.Reader, fileName string) (string, e
 	return fullname, err
 }
 
-// AddFile from fileheader
-func (lc *Storage) AddFile(reader io.Reader, fileName string) (*database.File, error) {
-	clientPath, err := lc.physicalAddFile(reader, fileName)
+// AddFile will add file to storage
+func (lc *Storage) AddFile(reader io.Reader, fullname string) (*database.File, error) {
+	if !lc.IsValidExt(filepath.Ext(fullname)) {
+		return nil, ErrFileExtInvalid
+	}
+	clientPath, err := lc.physicalAddFile(reader, fullname)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +80,7 @@ func (lc *Storage) AddFile(reader io.Reader, fileName string) (*database.File, e
 	return &fileModel, err
 }
 
-// ReplaceFile in storage
+// ReplaceFile will move the old file to trash and add a new file with the same name in storage
 func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, error) {
 	backupFullname, err := lc.physicalDeleteFile(file)
 	if err != nil {
@@ -167,6 +170,12 @@ func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory) (*databa
 		return nil, err
 	}
 	return &file, err
+}
+
+// GetImageBuffer return reader from filename
+func (lc *Storage) GetImageBuffer(filename string) ([]byte, error) {
+	path := lc.getPath(filename)
+	return getImageBuffer(path)
 }
 
 // GetImage from filename

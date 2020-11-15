@@ -87,6 +87,7 @@ func (s *Server) SetupRouter() {
 	// Register public route
 	imageGroup.Static("/static", s.storage.WorkingDir)
 	imageGroup.GET("/size/:width/:height/*name", s.HandleResize)
+	imageGroup.GET("/webp/:width/:height/*name", s.HandleGetWebpImage)
 
 	// History route
 	historyGroup := router.Group("history")

@@ -17,9 +17,9 @@ func Resize(img image.Image, width, height uint) image.Image {
 }
 
 // ResizeAndEncode return reader if no errors
-func ResizeAndEncode(img image.Image, ext string, width, height uint) (io.Reader, int64, error) {
+func ResizeAndEncode(img image.Image, width, height uint) (io.Reader, int64, error) {
 	resized := Resize(img, width, height)
-	return EncodeImageToReader(resized, ext)
+	return CompressImage(resized)
 }
 
 func getImageReader(filename string) (io.Reader, uint64, error) {

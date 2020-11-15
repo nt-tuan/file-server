@@ -27,6 +27,10 @@ var MaxDuplicateFile = 2020
 
 //PngExt, SvgExt is extensions
 var (
-	PngExt = ".png"
-	SvgExt = ".svg"
+	PNGExt  = ".png"
+	SVGExt  = ".svg"
+	JPGExt  = ".jpg"
+	JPEGExt = ".jpeg"
+	GIFExt  = ".gif"
+	WEBPExt = ".webp"
 )

@@ -33,13 +33,56 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/deletedImage/{id}/restore": {
+            "post": {
+                "summary": "Recover a deleted file",
+                "operationId": "HandleRecoverDeletedFile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ImageInfoRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/deletedImages": {
+            "get": {
+                "summary": "Get list of deleted files",
+                "operationId": "HandleGetDeletedFiles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.HistoryInfoRes"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/image": {
             "put": {
                 "consumes": [
                     "multipart/form-data"
                 ],
                 "summary": "Upload an image",
-                "operationId": "UploadImage",
+                "operationId": "HandleUploadImage",
                 "parameters": [
                     {
                         "type": "file",
@@ -118,10 +161,46 @@ var doc = `{
                 }
             }
         },
+        "/admin/image/{id}/history": {
+            "get": {
+                "description": "Get list of images information",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get list of history changes of an image",
+                "operationId": "HandleGetImageHistory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID of image",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.HistoryInfoRes"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/image/{id}/purgeCache": {
             "post": {
                 "summary": "Clear cache of image",
-                "operationId": "image",
+                "operationId": "HandlePurgeCDNCache",
                 "parameters": [
                     {
                         "type": "integer",
@@ -375,6 +454,43 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/images/webp/{width}/{height}/{/name}": {
+            "get": {
+                "summary": "Get a webp image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Width of image. Zero if resize scaled on its height",
+                        "name": "width",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Height of image. Zero if resize scaled on its width",
+                        "name": "height",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image local path",
+                        "name": "/name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -383,6 +499,26 @@ var doc = `{
             "properties": {
                 "err": {
                     "type": "string"
+                }
+            }
+        },
+        "models.HistoryInfoRes": {
+            "type": "object",
+            "properties": {
+                "actionType": {
+                    "type": "string"
+                },
+                "at": {
+                    "type": "string"
+                },
+                "backupFullname": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 }
             }
         },

@@ -23,8 +23,7 @@ type ImageRenameReq struct {
 
 //ImageNewReq bind new file request model
 type ImageNewReq struct {
-	Name string   `form:"name" binding:"required"`
-	Tags []string `form:"tags"`
+	Name string `form:"name" binding:"required"`
 }
 
 //ImageInfoRes model

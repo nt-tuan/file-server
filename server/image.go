@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ptcoffee/image-server/imaging"
 	"github.com/ptcoffee/image-server/server/models"
 )
 
@@ -18,7 +15,7 @@ func getImageURL(fullname string) string {
 }
 
 // HandleUploadImage godocs
-// @Id UploadImage
+// @Id HandleUploadImage
 // @Summary Upload an image
 // @Accept multipart/form-data
 // @Param file formData file true "Upload file"
@@ -44,41 +41,6 @@ func (s *Server) HandleUploadImage(c *gin.Context) {
 	}
 
 	c.JSON(200, models.NewImageInfoRes(file))
-}
-
-// HandleResize godocs
-// Id GetResizedImage
-// @Summary Get a resized image
-// @Param width path uint true "Width of image. Zero if resize scaled on its height"
-// @Param height path uint true "Height of image. Zero if resize scaled on its width"
-// @Param /name path string true "Image local path"
-// @Success 200
-// @Failure 400 {object} models.ErrorRes
-// @Router /images/size/{width}/{height}/{/name} [get]
-func (s *Server) HandleResize(c *gin.Context) {
-	var model models.ImageFileReq
-	if err := errorJSON(c, c.BindUri(&model)); err != nil {
-		return
-	}
-	s.config.CorrectImageModel(&model)
-	img, err := s.storage.GetImage(model.FileName)
-	if err != nil {
-		errorJSON(c, err)
-		return
-	}
-	var ext = filepath.Ext(model.FileName)
-	//resReader, contentLength, err := imaging.ResizeAndEncode(img, ext, model.Width, model.Height)
-	resReader, contentLength, err := imaging.ResizeAndEncode(img, ext, model.Width, model.Height)
-	if err != nil {
-		errorJSON(c, err)
-		return
-	}
-
-	contentType := "image/" + strings.Trim(ext, ".")
-	extraHeaders := map[string]string{
-		"Content-Disposition": `inline`,
-	}
-	c.DataFromReader(200, int64(contentLength), contentType, resReader, extraHeaders)
 }
 
 // HandleDeleteImage godocs
@@ -309,7 +271,7 @@ func (s *Server) HandlePurgeCDNCache(c *gin.Context) {
 // @Description Get list of images information
 // @Produce  json
 // @Param id path uint true "ID of image"
-// @Success 200 {object} []database.FileHistory
+// @Success 200 {array} models.HistoryInfoRes
 // @Failure 400 {object} models.ErrorRes
 // @Router /admin/image/{id}/history [get]
 func (s *Server) HandleGetImageHistory(c *gin.Context) {
@@ -328,9 +290,9 @@ func (s *Server) HandleGetImageHistory(c *gin.Context) {
 // HandleGetDeletedFiles godocs
 // @Id HandleGetDeletedFiles
 // @Summary Get list of deleted files
-// @Success 200 {object} []database.FileHistory
+// @Success 200 {array} models.HistoryInfoRes
 // @Failure 400 {object} models.ErrorRes
-// @Router /admin/deletedImages
+// @Router /admin/deletedImages [get]
 func (s *Server) HandleGetDeletedFiles(c *gin.Context) {
 	deletedFiles, err := s.db.GetDeletedFiles()
 	if err != nil {
@@ -345,7 +307,7 @@ func (s *Server) HandleGetDeletedFiles(c *gin.Context) {
 // @Summary Recover a deleted file
 // @Success 200 {object} models.ImageInfoRes
 // @Failure 400 {object} models.ErrorRes
-// @Router /admin/deletedImage/{id}/restore
+// @Router /admin/deletedImage/{id}/restore [post]
 func (s *Server) HandleRecoverDeletedFile(c *gin.Context) {
 	var model models.IDReq
 	if err := errorJSON(c, c.BindUri(&model)); err != nil {

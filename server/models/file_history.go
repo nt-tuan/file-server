@@ -6,7 +6,8 @@ import (
 	"github.com/ptcoffee/image-server/database"
 )
 
-type HistoryInfo struct {
+// HistoryInfoRes is history of a file response to client
+type HistoryInfoRes struct {
 	ID             uint                `json:"id"`
 	At             time.Time           `json:"at"`
 	Fullname       string              `json:"fullname"`
@@ -14,9 +15,9 @@ type HistoryInfo struct {
 	ActionType     database.FileAction `json:"actionType"`
 }
 
-// NewHistoryInfo return response body of history file
-func NewHistoryInfo(fileHistory database.FileHistory) HistoryInfo {
-	return HistoryInfo{
+// NewHistoryInfo returns HistoryInfo from FileHistory
+func NewHistoryInfo(fileHistory database.FileHistory) HistoryInfoRes {
+	return HistoryInfoRes{
 		ID:             fileHistory.ID,
 		At:             fileHistory.UpdatedAt,
 		Fullname:       fileHistory.Fullname,
@@ -25,8 +26,9 @@ func NewHistoryInfo(fileHistory database.FileHistory) HistoryInfo {
 	}
 }
 
-func NewHistoryInfos(fileHistories []database.FileHistory) []HistoryInfo {
-	historyInfos := make([]HistoryInfo, len(fileHistories))
+// NewHistoryInfos return array of HistoryInfo from FileHistory
+func NewHistoryInfos(fileHistories []database.FileHistory) []HistoryInfoRes {
+	historyInfos := make([]HistoryInfoRes, len(fileHistories))
 	for index := range fileHistories {
 		historyInfos[index] = NewHistoryInfo(fileHistories[index])
 	}
