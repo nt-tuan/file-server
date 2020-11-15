@@ -45,7 +45,7 @@ func (s *Server) HandleResize(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	data, err := img.ResizeAndCrop(model.Width, model.Height)
+	data, err := img.Resize(model.Width, model.Height)
 	if err != nil {
 		errorJSON(c, err)
 	}
@@ -67,7 +67,7 @@ func (s *Server) HandleGetWebpImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	resized, err := img.ResizeAndCrop(model.Width, model.Height)
+	resized, err := img.Resize(model.Width, model.Height)
 	if err != nil {
 		errorJSON(c, err)
 		return
