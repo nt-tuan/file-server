@@ -55,7 +55,8 @@ func (db *DB) GetDeletedFiles() ([]FileHistory, error) {
 func (db *DB) RestoreDeletedFile(fileHistory FileHistory) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
-		if err := tx.Delete(&FileHistory{Model: gorm.Model{ID: fileHistory.ID}}).Error; err != nil {
+		if err := tx.Model(&FileHistory{Model: gorm.Model{ID: fileHistory.ID}}).
+			Update("BackupFullname", nil).Error; err != nil {
 			// return any error will rollback
 			return err
 		}
