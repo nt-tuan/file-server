@@ -13,11 +13,11 @@ type IDReq struct {
 
 //ImagesReq model bind request images model
 type ImagesReq struct {
-	PageSize    uint     `form:"pageSize"`
-	PageCurrent uint     `form:"pageCurrent"`
-	OrderBy     []string `form:"orderBy"`
-	OrderDir    []string `form:"orderDir"`
-	Tags        []string `form:"tags"`
+	Limit    *uint    `form:"limit"`
+	Offset   *uint    `form:"offset"`
+	OrderBy  []string `form:"orderBy"`
+	OrderDir []string `form:"orderDir"`
+	Tags     []string `form:"tags"`
 }
 
 //ImageRenameReq bind rename request model

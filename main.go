@@ -2,10 +2,12 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/ptcoffee/image-server/database"
 	"github.com/ptcoffee/image-server/server"
+	"github.com/ptcoffee/image-server/worker"
 )
 
 // @title Swagger Example API
@@ -54,6 +56,13 @@ import (
 // @x-extension-openapi {"example": "value on a json format"}
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
+	if strings.Contains(os.Getenv("RUN_WORKER"), "fix_metadata") {
+		worker := worker.NewWorker(dbURL)
+		if err := worker.FixImageMetadata(); err != nil {
+			panic(err)
+		}
+		return
+	}
 	db := database.New(dbURL)
 	server := server.NewServer(db)
 	server.SetupRouter()
