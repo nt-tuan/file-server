@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/h2non/bimg"
 	"github.com/twinj/uuid"
 )
 
@@ -89,14 +90,34 @@ func getImageFromPath(filepath string) (image.Image, error) {
 //IsValidExt return true if file extension is a valid extension
 func (lc *Storage) IsValidExt(ext string) bool {
 	for _, item := range lc.ValidExts {
-		if item == ext {
+		if strings.ToLower(item) == strings.ToLower(ext) {
 			return true
 		}
 	}
 	return false
 }
 
-//RemoveContents will clear directory
+// GetFileSize return file storage size
+func (lc *Storage) GetFileSize(fullname string) (int64, error) {
+	path := lc.getPath(fullname)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return 0, err
+	}
+	return fileInfo.Size(), nil
+}
+
+// GetImageSize return width and height of image
+func (lc *Storage) GetImageSize(fullname string) (bimg.ImageSize, error) {
+	path := lc.getPath(fullname)
+	data, err := bimg.Read(path)
+	if err != nil {
+		return bimg.ImageSize{}, err
+	}
+	return bimg.Size(data)
+}
+
+// RemoveContents will clear directory
 func RemoveContents(dir string) error {
 	d, err := os.Open(dir)
 	if err != nil {

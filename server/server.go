@@ -95,6 +95,17 @@ func (s *Server) SetupRouter() {
 
 	// Register private route
 	adminGroup := router.Group("/admin")
+	adminGroup.Use(func(c *gin.Context) {
+		var header struct {
+			User string `header:"X-User"`
+		}
+		if err := c.ShouldBindHeader(&header); err != nil {
+			log.Println(err)
+		}
+		log.Printf("User: %s", header.User)
+		c.Set("User", header.User)
+		c.Next()
+	})
 	adminGroup.GET("/images", s.HandleGetImages)
 	adminGroup.GET("/image/:id", s.HandleGetImageByID)
 	adminGroup.DELETE("/image/:id", s.HandleDeleteImage)

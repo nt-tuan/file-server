@@ -13,6 +13,8 @@ type HistoryInfoRes struct {
 	Fullname       string              `json:"fullname"`
 	BackupFullname *string             `json:"backupFullname"`
 	ActionType     database.FileAction `json:"actionType"`
+	FileID         uint                `json:"fileID"`
+	By             string              `json:"by"`
 }
 
 // NewHistoryInfo returns HistoryInfo from FileHistory
@@ -23,6 +25,8 @@ func NewHistoryInfo(fileHistory database.FileHistory) HistoryInfoRes {
 		Fullname:       fileHistory.Fullname,
 		BackupFullname: fileHistory.BackupFullname,
 		ActionType:     fileHistory.ActionType,
+		By:             fileHistory.CreatedBy,
+		FileID:         fileHistory.FileID,
 	}
 }
 

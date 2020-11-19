@@ -13,7 +13,9 @@ func (s *Server) bindResizeRequest(c *gin.Context) (*bimg.Image, *models.ResizeI
 	if err := c.BindUri(&model); err != nil {
 		return nil, nil, err
 	}
-	s.config.CorrectImageModel(&model)
+	if err := s.config.CheckImageSize(model.Width, model.Height); err != nil {
+		return nil, nil, err
+	}
 	buffer, err := s.storage.GetImageBuffer(model.FileName)
 	if err != nil {
 		return nil, nil, err
@@ -45,6 +47,7 @@ func (s *Server) HandleResize(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
+
 	data, err := img.Resize(model.Width, model.Height)
 	if err != nil {
 		errorJSON(c, err)

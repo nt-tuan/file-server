@@ -1,8 +1,6 @@
 package database
 
 import (
-	"path/filepath"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -82,18 +80,22 @@ func (db *DB) CountFiles(tags []string) (uint, error) {
 // endregion
 
 // CreateFile to database
-func (db *DB) CreateFile(file *File) error {
+func (db *DB) CreateFile(fullname string, width, height int, diskSize int64, user string) (*File, error) {
+	file := NewFile(fullname, width, height, diskSize, user)
 	file.ExtractParts()
 	if err := db.Model(&File{}).
-		Create(file).
+		Create(&file).
 		Error; err != nil {
-		return err
+		return nil, err
 	}
-	return db.AddFileHistory(file, CreateAction, file.Fullname, nil)
+	if err := db.AddFileHistory(&file, CreateAction, file.Fullname, nil, user); err != nil {
+		return nil, err
+	}
+	return &file, nil
 }
 
 //RenameFile in database
-func (db *DB) RenameFile(file *File, newName string) error {
+func (db *DB) RenameFile(file *File, newName string, user string) error {
 	file.Fullname = newName
 	file.ExtractParts()
 	if err := db.Model(&File{}).
@@ -101,31 +103,25 @@ func (db *DB) RenameFile(file *File, newName string) error {
 		Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, RenameAction, file.Fullname, nil)
+	return db.AddFileHistory(file, RenameAction, file.Fullname, nil, user)
 }
 
 // ReplaceFile in database
-func (db *DB) ReplaceFile(file *File, newName string, backupName *string) error {
+func (db *DB) ReplaceFile(file *File, newName string, backupName *string, user string) error {
 	file.Fullname = newName
 	file.ExtractParts()
 	if err := db.Model(&File{}).
 		Updates(file).Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, ReplaceAction, newName, backupName)
+	return db.AddFileHistory(file, ReplaceAction, newName, backupName, user)
 }
 
 //DeleteFile in database
-func (db *DB) DeleteFile(file *File, backup *string) error {
+func (db *DB) DeleteFile(file *File, backup *string, user string) error {
 	if err := db.Model(&File{}).
 		Delete(file).Error; err != nil {
 		return err
 	}
-	return db.AddFileHistory(file, DeleteAction, file.Fullname, backup)
-}
-
-// UntrackDeleteFile will try to delete file in db without leaving a bread piece
-func (db *DB) UntrackDeleteFile(path string) {
-	name := filepath.Base(path)
-	db.Model(&File{}).Delete(&File{Fullname: name})
+	return db.AddFileHistory(file, DeleteAction, file.Fullname, backup, user)
 }
