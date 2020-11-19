@@ -23,10 +23,10 @@ func (db *DB) GetFiles(tags []string, offset *uint, limit *uint, orders []string
 		}
 	}
 	if offset != nil {
-		chain = chain.Offset(offset)
+		chain = chain.Offset(*offset)
 	}
 	if limit != nil {
-		chain = chain.Limit(limit)
+		chain = chain.Limit(*limit)
 	}
 	if err := chain.
 		Find(&files).

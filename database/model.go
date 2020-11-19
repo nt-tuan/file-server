@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// FileAction is action type
 type FileAction string
 
 // FileActions
