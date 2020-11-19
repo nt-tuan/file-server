@@ -15,10 +15,12 @@ var dbURL = "postgres://image-server:@:54321/image-server?sslmode=disable"
 func setup() {
 	db = NewClean(dbURL)
 }
-
+func newUint(number uint) *uint {
+	return &number
+}
 func TestGetFiles(t *testing.T) {
 	setup()
-	files, err := db.GetFiles(make([]string, 0), 0, 10, make([]string, 0))
+	files, err := db.GetFiles(make([]string, 0), newUint(0), newUint(10), make([]string, 0))
 	if err != nil {
 		t.Error(err)
 		return

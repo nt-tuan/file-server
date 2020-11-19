@@ -161,7 +161,7 @@ func (s *Server) HandleGetImages(c *gin.Context) {
 		}
 	}
 
-	imgs, err := s.db.GetFiles(model.Tags, model.PageCurrent, model.PageSize, orders)
+	imgs, err := s.db.GetFiles(model.Tags, model.Offset, model.Limit, orders)
 	if err != nil {
 		errorJSON(c, err)
 		return

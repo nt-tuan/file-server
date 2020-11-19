@@ -7,25 +7,28 @@ import (
 // region gets
 
 // GetFiles has all of specified tags
-func (db *DB) GetFiles(tags []string, page, size uint, orders []string) ([]File, error) {
+func (db *DB) GetFiles(tags []string, offset *uint, limit *uint, orders []string) ([]File, error) {
 	var files []File
-	tempDB := db.Model(&File{}).
+	chain := db.Model(&File{}).
 		Preload("Tags")
 	if tags != nil && len(tags) > 0 {
-		tempDB = tempDB.
+		chain = chain.
 			Joins("JOIN file_tags ON file_tags.file_id = files.id").
 			Where("file_tags.tag_id in (?)", tags)
 	}
 
 	if orders != nil {
 		for _, od := range orders {
-			tempDB = tempDB.Order(od)
+			chain = chain.Order(od)
 		}
 	}
-
-	if err := tempDB.
-		Offset(size * page).
-		Limit(size).
+	if offset != nil {
+		chain = chain.Offset(offset)
+	}
+	if limit != nil {
+		chain = chain.Limit(limit)
+	}
+	if err := chain.
 		Find(&files).
 		Error; err != nil {
 		return nil, err
