@@ -1,10 +1,9 @@
 package server
 
 import (
+	"errors"
 	"os"
 	"strconv"
-
-	"github.com/ptcoffee/image-server/server/models"
 )
 
 //MaxBound of image
@@ -12,6 +11,9 @@ var (
 	DefaultMaxWidth  int = 4000
 	DefaultMaxHeight int = 2000
 )
+
+// ErrInvalidImageSize error
+var ErrInvalidImageSize = errors.New("invalid-image-size")
 
 //Config of server
 type Config struct {
@@ -34,12 +36,10 @@ func NewConfig() *Config {
 	return &config
 }
 
-//CorrectImageModel image request parameters
-func (conf *Config) CorrectImageModel(img *models.ResizeImageReq) {
-	if img.Width > conf.MaxWidth {
-		img.Width = conf.MaxWidth
+// CheckImageSize return error if the image is invalid
+func (config *Config) CheckImageSize(width int, height int) error {
+	if width <= config.MaxWidth && height <= config.MaxHeight {
+		return nil
 	}
-	if img.Height > conf.MaxHeight {
-		img.Height = conf.MaxHeight
-	}
+	return ErrInvalidImageSize
 }

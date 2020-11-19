@@ -13,8 +13,8 @@ var (
 )
 
 //AddFileHistory to db
-func (db *DB) AddFileHistory(file *File, action FileAction, fullname string, backupFullname *string) error {
-	fileHistory := NewFileHistory(file, action, fullname, backupFullname)
+func (db *DB) AddFileHistory(file *File, action FileAction, fullname string, backupFullname *string, user string) error {
+	fileHistory := NewFileHistory(file, action, fullname, backupFullname, user)
 	if err := db.Model(&FileHistory{}).
 		Create(&fileHistory).
 		Error; err != nil {
@@ -32,6 +32,7 @@ func (db *DB) GetFileHistoryRecords(fileID uint) ([]FileHistory, error) {
 	return files, nil
 }
 
+// GetDeletedFileByID return deleted file
 func (db *DB) GetDeletedFileByID(id uint) (*FileHistory, error) {
 	var file FileHistory
 	if err := db.First(&file, FileHistory{Model: gorm.Model{ID: id}}).Error; err != nil {

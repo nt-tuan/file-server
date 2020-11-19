@@ -31,20 +31,20 @@ func TestGetFiles(t *testing.T) {
 func TestAddFile(t *testing.T) {
 	setup()
 	newFile := &File{Fullname: "test.txt"}
-	newFile2 := &File{Fullname: "test.txt"}
-	if err := db.CreateFile(newFile); err != nil {
+	newFile, err := db.CreateFile("text.txt", 0, 0, 0, "")
+	if err != nil {
 		t.Error(err)
 	}
-	if err := db.CreateFile(newFile2); err != nil {
+	if _, err := db.CreateFile("text.txt", 0, 0, 0, ""); err != nil {
 		t.Error(err)
 		return
 	}
-	if err := db.RenameFile(newFile, "hhee"); err != nil {
+	if err := db.RenameFile(newFile, "renamed", ""); err != nil {
 		t.Error(err)
 		return
 	}
 	backup := "/deleted/zzz.txt"
-	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, &backup); err != nil {
+	if err := db.DeleteFile(&File{Model: gorm.Model{ID: newFile.ID}}, &backup, ""); err != nil {
 		t.Error(err)
 	}
 }

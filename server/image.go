@@ -34,7 +34,7 @@ func (s *Server) HandleUploadImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	file, err := s.storage.AddFile(reader, model.Name)
+	file, err := s.storage.AddFile(reader, model.Name, c.GetString("User"))
 	if err != nil {
 		errorJSON(c, err)
 		return
@@ -59,7 +59,7 @@ func (s *Server) HandleDeleteImage(c *gin.Context) {
 	if err != nil {
 		errorJSON(c, err)
 	}
-	if err := s.storage.DeleteFile(file); err != nil {
+	if err := s.storage.DeleteFile(*file, c.GetString("User")); err != nil {
 		errorJSON(c, err)
 		return
 	}
@@ -93,7 +93,7 @@ func (s *Server) HandleRenameImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if err := s.storage.RenameFile(file, model.Name); err != nil {
+	if err := s.storage.RenameFile(*file, model.Name, c.GetString("User")); err != nil {
 		errorJSON(c, err)
 		return
 	}
@@ -128,7 +128,7 @@ func (s *Server) HandleReplaceImage(c *gin.Context) {
 		errorJSON(c, err)
 		return
 	}
-	if _, err := s.storage.ReplaceFile(file, reader); err != nil {
+	if _, err := s.storage.ReplaceFile(*file, reader, c.GetString("User")); err != nil {
 		errorJSON(c, err)
 		return
 	}
@@ -321,7 +321,7 @@ func (s *Server) HandleRecoverDeletedFile(c *gin.Context) {
 	if deletedFile.BackupFullname == nil {
 		errorJSON(c, errors.New("file can not restored"))
 	}
-	restoredFile, err := s.storage.RestoreDeletedFile(*deletedFile)
+	restoredFile, err := s.storage.RestoreDeletedFile(*deletedFile, c.GetString("User"))
 	if err != nil {
 		errorJSON(c, err)
 		return

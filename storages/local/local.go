@@ -61,7 +61,7 @@ func (lc *Storage) physicalAddFile(reader io.Reader, fileName string) (string, e
 }
 
 // AddFile will add file to storage
-func (lc *Storage) AddFile(reader io.Reader, fullname string) (*database.File, error) {
+func (lc *Storage) AddFile(reader io.Reader, fullname string, user string) (*database.File, error) {
 	if !lc.IsValidExt(filepath.Ext(fullname)) {
 		return nil, ErrFileExtInvalid
 	}
@@ -69,20 +69,23 @@ func (lc *Storage) AddFile(reader io.Reader, fullname string) (*database.File, e
 	if err != nil {
 		return nil, err
 	}
+	imageSize, _ := lc.GetImageSize(clientPath)
+	diskSize, err := lc.GetFileSize(clientPath)
+	if err != nil {
+		return nil, err
+	}
 	// Save new file to database if this file created successfully
-	fileModel := database.File{Fullname: clientPath}
-	err = lc.db.CreateFile(&fileModel)
-
+	file, err := lc.db.CreateFile(clientPath, imageSize.Width, imageSize.Height, diskSize, user)
 	// If failed to save to database, delete the file
 	if err != nil {
-		lc.physicalDeleteFile(&fileModel)
+		lc.physicalDeleteFile(clientPath)
 	}
-	return &fileModel, err
+	return file, err
 }
 
 // ReplaceFile will move the old file to trash and add a new file with the same name in storage
-func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, error) {
-	backupFullname, err := lc.physicalDeleteFile(file)
+func (lc *Storage) ReplaceFile(file database.File, reader io.Reader, user string) (*string, error) {
+	backupFullname, err := lc.physicalDeleteFile(file.Fullname)
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +94,12 @@ func (lc *Storage) ReplaceFile(file *database.File, reader io.Reader) (*string, 
 	if err != nil {
 		return nil, err
 	}
-	lc.db.ReplaceFile(file, newName, backupFullname)
+	lc.db.ReplaceFile(&file, newName, backupFullname, user)
 	return backupFullname, nil
 }
 
 //RenameFile in storage
-func (lc *Storage) RenameFile(file *database.File, newName string) error {
+func (lc *Storage) RenameFile(file database.File, newName string, user string) error {
 	oldPath := lc.getPath(file.Fullname)
 	newPath := lc.getPath(newName)
 
@@ -113,7 +116,7 @@ func (lc *Storage) RenameFile(file *database.File, newName string) error {
 
 	// Save rename action to database.
 	// If failed to save action, rename to the origin one
-	if err := lc.db.RenameFile(file, newName); err != nil {
+	if err := lc.db.RenameFile(&file, newName, user); err != nil {
 		if err := moveFile(newPath, oldPath); err != nil {
 			log.Println(err)
 		}
@@ -122,10 +125,10 @@ func (lc *Storage) RenameFile(file *database.File, newName string) error {
 	return nil
 }
 
-func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
-	path := lc.getPath(file.Fullname)
+func (lc *Storage) physicalDeleteFile(fullname string) (*string, error) {
+	path := lc.getPath(fullname)
 	if fileExists(path) {
-		backupFullname := lc.newBackupFullname(file.Fullname)
+		backupFullname := lc.newBackupFullname(fullname)
 		backupPath := lc.getBackupPath(backupFullname)
 		err := moveFile(path, backupPath)
 		if err != nil {
@@ -138,17 +141,17 @@ func (lc *Storage) physicalDeleteFile(file *database.File) (*string, error) {
 
 // DeleteFile will copy the file to history zone, then remove the file in working zone
 // return the backup file and error if exists
-func (lc *Storage) DeleteFile(file *database.File) error {
-	backupFullname, err := lc.physicalDeleteFile(file)
+func (lc *Storage) DeleteFile(file database.File, user string) error {
+	backupFullname, err := lc.physicalDeleteFile(file.Fullname)
 	if err != nil {
 		return err
 	}
-	return lc.db.DeleteFile(file, backupFullname)
+	return lc.db.DeleteFile(&file, backupFullname, user)
 }
 
 // RestoreDeletedFile will try to rollback action deletefile
 // Get the backup file and copy that file to working zone
-func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory) (*database.File, error) {
+func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory, user string) (*database.File, error) {
 	if historyFile.BackupFullname == nil {
 		return nil, ErrFileNotFound
 	}
@@ -160,8 +163,12 @@ func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory) (*databa
 	if err := moveFile(backupPath, path); err != nil {
 		return nil, err
 	}
-	file := database.File{Fullname: historyFile.Fullname}
-	err := lc.db.CreateFile(&file)
+	imageSize, _ := lc.GetImageSize(historyFile.Fullname)
+	diskSize, err := lc.GetFileSize(historyFile.Fullname)
+	if err != nil {
+		return nil, err
+	}
+	file, err := lc.db.CreateFile(historyFile.Fullname, imageSize.Width, imageSize.Height, diskSize, user)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +176,7 @@ func (lc *Storage) RestoreDeletedFile(historyFile database.FileHistory) (*databa
 	if err != nil {
 		return nil, err
 	}
-	return &file, err
+	return file, err
 }
 
 // GetImageBuffer return reader from filename
@@ -214,7 +221,12 @@ func (lc *Storage) CreateMissingFiles() {
 		if _, err := lc.db.GetFileByName(localPath); err == nil {
 			return nil
 		}
-
-		return lc.db.CreateFile(&database.File{Fullname: localPath})
+		imageSize, _ := lc.GetImageSize(localPath)
+		diskSize, err := lc.GetFileSize(localPath)
+		if err != nil {
+			return err
+		}
+		_, err = lc.db.CreateFile(localPath, imageSize.Width, imageSize.Height, diskSize, "")
+		return err
 	})
 }

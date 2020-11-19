@@ -50,7 +50,7 @@ func TestAddFile(t *testing.T) {
 	}
 
 	// var fname string
-	_, err = store.AddFile(reader, addedFile.DestName)
+	_, err = store.AddFile(reader, addedFile.DestName, "")
 	if err != nil {
 		t.Error(err)
 		return
@@ -67,12 +67,12 @@ func TestRemoveFile(t *testing.T) {
 		return
 	}
 	// var fname string
-	file, err := store.AddFile(reader, addedFile.DestName)
+	file, err := store.AddFile(reader, addedFile.DestName, "")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if err := store.DeleteFile(file); err != nil {
+	if err := store.DeleteFile(*file, ""); err != nil {
 		t.Error(err)
 		return
 	}
@@ -88,13 +88,13 @@ func TestRenameFile(t *testing.T) {
 	}
 
 	// var fname string
-	file, err := store.AddFile(reader, addedFile.DestName)
+	file, err := store.AddFile(reader, addedFile.DestName, "")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	newName := uuid.NewV4().String() + ".jpg"
-	if err := store.RenameFile(file, newName); err != nil {
+	if err := store.RenameFile(*file, newName, ""); err != nil {
 		t.Error(err)
 		return
 	}
@@ -110,7 +110,7 @@ func TestReplaceFile(t *testing.T) {
 		return
 	}
 	// var fname string
-	file, err := store.AddFile(reader, addedFile.DestName)
+	file, err := store.AddFile(reader, addedFile.DestName, "")
 	if err != nil {
 		t.Error(err)
 		return
@@ -121,7 +121,7 @@ func TestReplaceFile(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if _, err := store.ReplaceFile(file, replaceReader); err != nil {
+	if _, err := store.ReplaceFile(*file, replaceReader, ""); err != nil {
 		t.Error(err)
 		return
 	}

@@ -265,7 +265,7 @@ func TestGetResizedImageShouldWork(t *testing.T) {
 	// the request gives a 200
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
-	recorder2 := performRequest(server.router, "GET", "/images/size/400/0/test_resizing_image.png", nil)
+	recorder2 := performRequest(server.router, "GET", "/images/size/100/0/test_resizing_image.png", nil)
 	assert.Equal(t, http.StatusOK, recorder2.Code)
 }
 

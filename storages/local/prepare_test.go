@@ -88,19 +88,19 @@ func downloadTestFiles() error {
 		if _, err := os.Stat(localPath); err == nil {
 			continue
 		}
-
-		if resp, err := http.Get(img.URL); err != nil {
+		resp, err := http.Get(img.URL)
+		if err != nil {
 			fmt.Println(err)
 			return err
-		} else {
-			out, err := os.Create(localPath)
-			if err != nil {
-				fmt.Println(err)
-				return err
-			}
-			io.Copy(out, resp.Body)
-			resp.Body.Close()
 		}
+		out, err := os.Create(localPath)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		io.Copy(out, resp.Body)
+		resp.Body.Close()
+
 	}
 	return nil
 }

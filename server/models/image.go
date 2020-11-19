@@ -1,6 +1,10 @@
 package models
 
-import "github.com/ptcoffee/image-server/database"
+import (
+	"time"
+
+	"github.com/ptcoffee/image-server/database"
+)
 
 //IDReq model bind id from uri
 type IDReq struct {
@@ -28,9 +32,14 @@ type ImageNewReq struct {
 
 //ImageInfoRes model
 type ImageInfoRes struct {
-	ID       uint     `json:"id"`
-	Fullname string   `json:"fullname"`
-	Tags     []string `json:"tags"`
+	ID       uint      `json:"id"`
+	Fullname string    `json:"fullname"`
+	Tags     []string  `json:"tags"`
+	By       string    `json:"by"`
+	At       time.Time `json:"at"`
+	Width    int       `json:"width"`
+	Height   int       `json:"height"`
+	DiskSize int64     `json:"diskSize"`
 }
 
 //NewImageInfoRes model
@@ -44,5 +53,10 @@ func NewImageInfoRes(img *database.File) *ImageInfoRes {
 			rs.Tags[i] = tag.ID
 		}
 	}
+	rs.By = img.CreatedBy
+	rs.At = img.CreatedAt
+	rs.Width = img.Width
+	rs.Height = img.Height
+	rs.DiskSize = img.DiskSize
 	return &rs
 }

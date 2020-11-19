@@ -30,6 +30,10 @@ type File struct {
 	Fullname      string
 	NamePart      string
 	ExtensionPart *string
+	CreatedBy     string
+	Width         int
+	Height        int
+	DiskSize      int64
 	Tags          []Tag `gorm:"many2many:file_tags;association_foreignkey:ID;foreignkey:ID"`
 	FileHistories []FileHistory
 }
@@ -46,16 +50,23 @@ type FileHistory struct {
 	BackupFullname *string    `json:"backupFullname"`
 	ActionType     FileAction `json:"actionType"`
 	FileID         uint       `json:"fileID"`
+	CreatedBy      string
 	File           *File
 }
 
+// NewFile return a new file record
+func NewFile(fullname string, width, height int, diskSize int64, user string) File {
+	return File{Fullname: fullname, CreatedBy: user, Width: width, Height: height, DiskSize: diskSize}
+}
+
 //NewFileHistory created from File and action
-func NewFileHistory(f *File, action FileAction, fullname string, backupFullname *string) *FileHistory {
+func NewFileHistory(f *File, action FileAction, fullname string, backupFullname *string, user string) *FileHistory {
 	var h = FileHistory{}
 	h.Fullname = fullname
 	h.BackupFullname = backupFullname
 	h.ActionType = action
 	h.FileID = f.ID
+	h.CreatedBy = user
 	return &h
 }
 
