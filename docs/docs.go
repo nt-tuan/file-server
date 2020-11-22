@@ -362,6 +362,16 @@ var doc = `{
                 "operationId": "GetImages",
                 "parameters": [
                     {
+                        "type": "integer",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -377,16 +387,6 @@ var doc = `{
                         },
                         "collectionFormat": "multi",
                         "name": "orderDir",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "pageCurrent",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "pageSize",
                         "in": "query"
                     },
                     {
@@ -407,6 +407,41 @@ var doc = `{
                             "items": {
                                 "$ref": "#/definitions/models.ImageInfoRes"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/images/count": {
+            "get": {
+                "description": "count images which has specified tags",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "count images",
+                "operationId": "HandleCountImages",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "name": "tags",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ImageCountRes"
                         }
                     },
                     "400": {
@@ -514,6 +549,12 @@ var doc = `{
                 "backupFullname": {
                     "type": "string"
                 },
+                "by": {
+                    "type": "string"
+                },
+                "fileID": {
+                    "type": "integer"
+                },
                 "fullname": {
                     "type": "string"
                 },
@@ -522,11 +563,31 @@ var doc = `{
                 }
             }
         },
+        "models.ImageCountRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.ImageInfoRes": {
             "type": "object",
             "properties": {
+                "at": {
+                    "type": "string"
+                },
+                "by": {
+                    "type": "string"
+                },
+                "diskSize": {
+                    "type": "integer"
+                },
                 "fullname": {
                     "type": "string"
+                },
+                "height": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -536,6 +597,9 @@ var doc = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "width": {
+                    "type": "integer"
                 }
             }
         }

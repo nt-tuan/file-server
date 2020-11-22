@@ -11,7 +11,7 @@ type IDReq struct {
 	ID uint `uri:"id" binding:"required"`
 }
 
-//ImagesReq model bind request images model
+// ImagesReq model bind request images model
 type ImagesReq struct {
 	Limit    *uint    `form:"limit"`
 	Offset   *uint    `form:"offset"`
@@ -20,7 +20,17 @@ type ImagesReq struct {
 	Tags     []string `form:"tags"`
 }
 
-//ImageRenameReq bind rename request model
+// ImagesCountReq struct
+type ImagesCountReq struct {
+	Tags []string `form:"tags"`
+}
+
+// ImageCountRes struct
+type ImageCountRes struct {
+	Count int `json:"count"`
+}
+
+// ImageRenameReq bind rename request model
 type ImageRenameReq struct {
 	Name string `json:"name" binding:"required"`
 }

@@ -13,21 +13,40 @@ definitions:
         type: string
       backupFullname:
         type: string
+      by:
+        type: string
+      fileID:
+        type: integer
       fullname:
         type: string
       id:
         type: integer
     type: object
+  models.ImageCountRes:
+    properties:
+      count:
+        type: integer
+    type: object
   models.ImageInfoRes:
     properties:
+      at:
+        type: string
+      by:
+        type: string
+      diskSize:
+        type: integer
       fullname:
         type: string
+      height:
+        type: integer
       id:
         type: integer
       tags:
         items:
           type: string
         type: array
+      width:
+        type: integer
     type: object
 host: localhost:5000
 info:
@@ -262,6 +281,12 @@ paths:
       description: Get list of images information
       operationId: GetImages
       parameters:
+      - in: query
+        name: limit
+        type: integer
+      - in: query
+        name: offset
+        type: integer
       - collectionFormat: multi
         in: query
         items:
@@ -274,12 +299,6 @@ paths:
           type: string
         name: orderDir
         type: array
-      - in: query
-        name: pageCurrent
-        type: integer
-      - in: query
-        name: pageSize
-        type: integer
       - collectionFormat: multi
         in: query
         items:
@@ -300,6 +319,29 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorRes'
       summary: Get list of images information
+  /admin/images/count:
+    get:
+      description: count images which has specified tags
+      operationId: HandleCountImages
+      parameters:
+      - collectionFormat: multi
+        in: query
+        items:
+          type: string
+        name: tags
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ImageCountRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: count images
   /images/size/{width}/{height}/{/name}:
     get:
       parameters:

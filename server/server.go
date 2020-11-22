@@ -107,6 +107,7 @@ func (s *Server) SetupRouter() {
 		c.Next()
 	})
 	adminGroup.GET("/images", s.HandleGetImages)
+	adminGroup.GET("/images/count", s.HandleCountImages)
 	adminGroup.GET("/image/:id", s.HandleGetImageByID)
 	adminGroup.DELETE("/image/:id", s.HandleDeleteImage)
 	adminGroup.POST("/image", s.HandleUploadImage)

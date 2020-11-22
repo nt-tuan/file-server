@@ -174,6 +174,28 @@ func (s *Server) HandleGetImages(c *gin.Context) {
 	c.JSON(200, rs)
 }
 
+// HandleCountImages godocs
+// @Id HandleCountImages
+// @Summary count images
+// @Description count images which has specified tags
+// @Produce json
+// @Param model query models.ImagesCountReq false "query model"
+// @Success 200 {object} models.ImageCountRes
+// @Failure 400 {object} models.ErrorRes
+// @Router /admin/images/count [get]
+func (s *Server) HandleCountImages(c *gin.Context) {
+	var model models.ImagesCountReq
+	if err := errorJSON(c, c.BindQuery(&model)); err != nil {
+		return
+	}
+	count, err := s.db.CountFiles(model.Tags)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	c.JSON(200, &models.ImageCountRes{Count: count})
+}
+
 // HandleGetImageByID docs
 // @Id GetImageByID
 // @Summary Get an image information

@@ -4,18 +4,21 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// region gets
+func filterByTags(db *gorm.DB, tags []string) *gorm.DB {
+	if tags != nil && len(tags) > 0 {
+		return db.
+			Joins("JOIN file_tags ON file_tags.file_id = files.id").
+			Where("file_tags.tag_id in (?)", tags)
+	}
+	return db
+}
 
 // GetFiles has all of specified tags
 func (db *DB) GetFiles(tags []string, offset *uint, limit *uint, orders []string) ([]File, error) {
 	var files []File
 	chain := db.Model(&File{}).
 		Preload("Tags")
-	if tags != nil && len(tags) > 0 {
-		chain = chain.
-			Joins("JOIN file_tags ON file_tags.file_id = files.id").
-			Where("file_tags.tag_id in (?)", tags)
-	}
+	chain = filterByTags(chain, tags)
 
 	if orders != nil {
 		for _, od := range orders {
@@ -34,6 +37,17 @@ func (db *DB) GetFiles(tags []string, offset *uint, limit *uint, orders []string
 		return nil, err
 	}
 	return files, nil
+}
+
+// CountFiles return files number filtered by tags
+func (db *DB) CountFiles(tags []string) (int, error) {
+	chain := db.Model(&File{})
+	chain = filterByTags(chain, tags)
+	var count int
+	if err := chain.Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 //GetFileByName return File
@@ -65,22 +79,6 @@ func (db *DB) GetFileByID(id uint) (file *File, err error) {
 		First(file).Error
 	return
 }
-
-//CountFiles has all of specified tags
-func (db *DB) CountFiles(tags []string) (uint, error) {
-	var count uint
-	if err := db.Model(&File{}).
-		Preload("Tags").
-		Joins("JOIN file_tags ON file_tags.file_id = files.id").
-		Where("file_tags.tag_id in ?", tags).
-		Count(&count).
-		Error; err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-// endregion
 
 // CreateFile to database
 func (db *DB) CreateFile(fullname string, width, height int, diskSize int64, user string) (*File, error) {
