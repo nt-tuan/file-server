@@ -342,6 +342,7 @@ func (s *Server) HandleRecoverDeletedFile(c *gin.Context) {
 	}
 	if deletedFile.BackupFullname == nil {
 		errorJSON(c, errors.New("file can not restored"))
+		return
 	}
 	restoredFile, err := s.storage.RestoreDeletedFile(*deletedFile, c.GetString("User"))
 	if err != nil {
