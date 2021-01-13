@@ -62,6 +62,30 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /:
+    put:
+      consumes:
+      - multipart/form-data
+      operationId: HandleUploadUserImage
+      parameters:
+      - description: Upload file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: File name
+        in: formData
+        name: name
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorRes'
+      summary: Upload an user image
   /admin/deletedImage/{id}/restore:
     post:
       operationId: HandleRecoverDeletedFile
@@ -107,7 +131,8 @@ paths:
         required: true
         type: string
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -123,7 +148,8 @@ paths:
         required: true
         type: integer
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -181,7 +207,8 @@ paths:
         required: true
         type: integer
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -203,7 +230,8 @@ paths:
         required: true
         type: integer
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -229,7 +257,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -250,7 +279,8 @@ paths:
         required: true
         type: string
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -270,7 +300,8 @@ paths:
         required: true
         type: string
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -361,7 +392,8 @@ paths:
         required: true
         type: string
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -386,7 +418,8 @@ paths:
         required: true
         type: string
       responses:
-        "200": {}
+        "200":
+          description: ""
         "400":
           description: Bad Request
           schema:
@@ -407,6 +440,7 @@ securityDefinitions:
     tokenUrl: https://example.com/oauth/token
     type: oauth2
   OAuth2Application:
+    authorizationUrl: ""
     flow: application
     scopes:
       admin: ' Grants read and write access to administrative information'
@@ -421,6 +455,7 @@ securityDefinitions:
       write: ' Grants write access'
     type: oauth2
   OAuth2Password:
+    authorizationUrl: ""
     flow: password
     scopes:
       admin: ' Grants read and write access to administrative information'

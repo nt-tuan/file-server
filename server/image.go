@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ptcoffee/image-server/server/models"
@@ -12,6 +13,37 @@ import (
 
 func getImageURL(fullname string) string {
 	return "https://" + os.Getenv("BASE_PATH") + "/images/static/" + fullname
+}
+
+// HandleUploadUserImage godocs
+// @Id HandleUploadUserImage
+// @Summary Upload an user image
+// @Accept multipart/form-data
+// @Param file formData file true "Upload file"
+// @Param name formData string true "File name"
+// @Success 200
+// @Failure 400 {object} models.ErrorRes
+// @Router / [put]
+func (s *Server) HandleUploadUserImage(c *gin.Context) {
+	var model models.ImageNewReq
+	if err := c.Bind(&model); err != nil {
+		return
+	}
+	userName := c.GetString("User")
+	fileName := filepath.Join("user", userName, model.Name)
+	// single file
+	reader, err := getFileFromGinContext(c)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	file, err := s.storage.AddFile(reader, fileName, userName)
+	if err != nil {
+		errorJSON(c, err)
+		return
+	}
+	s.db.AddTag(file, userName)
+	c.JSON(200, models.NewImageInfoRes(file))
 }
 
 // HandleUploadImage godocs
