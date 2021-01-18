@@ -95,17 +95,7 @@ func (s *Server) SetupRouter() {
 
 	// Register private route
 	adminGroup := router.Group("/admin")
-	adminGroup.Use(func(c *gin.Context) {
-		var header struct {
-			User string `header:"X-User"`
-		}
-		if err := c.ShouldBindHeader(&header); err != nil {
-			log.Println(err)
-		}
-		log.Printf("User: %s", header.User)
-		c.Set("User", header.User)
-		c.Next()
-	})
+	adminGroup.Use(parserUser)
 	adminGroup.GET("/images", s.HandleGetImages)
 	adminGroup.GET("/images/count", s.HandleCountImages)
 	adminGroup.GET("/image/:id", s.HandleGetImageByID)
@@ -119,11 +109,29 @@ func (s *Server) SetupRouter() {
 	adminGroup.GET("/deletedImages", s.HandleGetDeletedFiles)
 	adminGroup.POST("/deletedImage/:id/restore", s.HandleRecoverDeletedFile)
 	adminGroup.POST("/image/:id/purgeCache", s.HandlePurgeCDNCache)
+
+	meGroup := router.Group("/me")
+	meGroup.Use(parserUser)
+	meGroup.POST("/image", s.HandleUploadUserImage)
+	meGroup.GET("/image", s.HandleGetUserImages)
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/health/ready", func(c *gin.Context) {
 		c.JSON(200, map[string]bool{"ok": true})
 	})
 	s.router = router
+}
+
+func parserUser(c *gin.Context) {
+	var header struct {
+		User string `header:"X-User"`
+	}
+	if err := c.ShouldBindHeader(&header); err != nil {
+		log.Println(err)
+	}
+	log.Printf("User: %s", header.User)
+	c.Set("User", header.User)
+	c.Next()
 }
 
 //Start server

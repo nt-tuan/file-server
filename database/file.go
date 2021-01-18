@@ -1,6 +1,8 @@
 package database
 
 import (
+	"errors"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -18,6 +20,35 @@ func (db *DB) GetFiles(tags []string, offset *uint, limit *uint, orders []string
 	var files []File
 	chain := db.Model(&File{}).
 		Preload("Tags")
+	chain = filterByTags(chain, tags)
+
+	if orders != nil {
+		for _, od := range orders {
+			chain = chain.Order(od)
+		}
+	}
+	if offset != nil {
+		chain = chain.Offset(*offset)
+	}
+	if limit != nil {
+		chain = chain.Limit(*limit)
+	}
+	if err := chain.
+		Find(&files).
+		Error; err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+// GetFilesByUser has all of specified tags by user
+func (db *DB) GetFilesByUser(tags []string, offset *uint, limit *uint, orders []string, user string) ([]File, error) {
+	if user == "" {
+		return nil, errors.New("user is empty")
+	}
+	var files []File
+	chain := db.Model(&File{}).
+		Preload("Tags").Where(File{CreatedBy: user})
 	chain = filterByTags(chain, tags)
 
 	if orders != nil {
