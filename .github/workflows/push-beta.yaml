@@ -6,7 +6,7 @@ on:
       - "beta"
 env:
   # TODO: Change variable to your image's name.
-  IMAGE_NAME: image-server
+  IMAGE: image-server
   DOCKER_REPOSITORY: ghcr.io
 jobs:
   build:
